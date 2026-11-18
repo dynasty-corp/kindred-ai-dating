@@ -4,13 +4,24 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
   test('completes Wingman onboarding, Agent Lounge interview, Cohort accept, Co-Op game + Human Chat, and Dual-Consent Future Studio', async ({
     page,
   }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
     // Reset demo state cleanly before journey
     await page.request.post('/api/profiles', {
       data: { action: 'reset_demo' },
     });
 
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'KindredAI' })).toBeVisible();
+
+    // Verify Warm Nocturne -> Editorial Alabaster theme switcher works cleanly
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'nocturne');
+    await page.getByTestId('theme-toggle-button').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'alabaster');
+    await page.getByTestId('theme-toggle-button').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'nocturne');
 
     // Stage 1: Send a reflection to Wingman and verify Blueprint sidebar updates
     await page.getByTestId('wingman-input').fill(
@@ -55,5 +66,35 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
 
     await page.getByRole('button', { name: /Future Family Visualizer/i }).click();
     await expect(page.getByTestId('family-portrait-svg-composer')).toBeVisible();
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('renders cleanly across 390px mobile and 1440px desktop viewports without horizontal overflow', async ({
+    page,
+  }) => {
+    await page.request.post('/api/profiles', {
+      data: { action: 'reset_demo' },
+    });
+
+    for (const vp of [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(vp);
+      await page.goto('/');
+      await expect(page.getByRole('heading', { name: 'KindredAI' })).toBeVisible();
+
+      for (const tab of ['onboarding', 'discovery', 'games', 'future'] as const) {
+        await page.getByTestId(`stage-tab-${tab}`).click();
+        await page.waitForTimeout(150);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,
+        );
+        expect(overflow, `Unexpected horizontal overflow on ${vp.width}px at stage ${tab}`).toBe(
+          false,
+        );
+      }
+    }
   });
 });

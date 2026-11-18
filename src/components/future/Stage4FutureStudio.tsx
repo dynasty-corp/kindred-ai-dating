@@ -1,16 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Baby,
   CalendarHeart,
+  Check,
+  Copy,
   Globe2,
   Lock,
   ShieldAlert,
   Sparkles,
   Unlock,
 } from 'lucide-react';
-import { Badge, Button, Switch } from '@/components/ui/primitives';
+import { Badge, Button, SpotlightCard, Switch } from '@/components/ui/primitives';
+import { DreamGlobeDynamic } from '@/components/webgl/DynamicWebGL';
+import { KINDRED_SPRING, SNAPPY_SPRING, bentoCardVariants } from '@/lib/motion';
+import { useKindredTheme } from '@/lib/theme';
 import type {
   FutureSimulation,
   MatchDossier,
@@ -32,10 +38,10 @@ export function FamilyPortraitComposer({
 }) {
   if (renderMode === 'ai_image_api' && imageUrl) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-[#E4DDD2] bg-white">
+      <div className="overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={imageUrl} alt={caption} className="h-64 w-full object-cover" />
-        <p className="p-3 text-xs text-[#535963]">{caption}</p>
+        <p className="p-4 text-xs text-[var(--ink-secondary)]">{caption}</p>
       </div>
     );
   }
@@ -47,11 +53,11 @@ export function FamilyPortraitComposer({
   return (
     <div
       data-testid="family-portrait-svg-composer"
-      className="overflow-hidden rounded-2xl border border-[#E4DDD2] bg-[#FAF7F2]"
+      className="overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)]"
     >
       <svg
         viewBox="0 0 420 220"
-        className="w-full h-52"
+        className="h-52 w-full"
         role="img"
         aria-label={caption}
       >
@@ -81,12 +87,14 @@ export function FamilyPortraitComposer({
         <rect x="155" y="174" width="210" height="16" rx="8" fill="#15181C" fillOpacity="0.86" />
         <rect x="242" y="158" width="18" height="16" rx="4" fill="#FFFFFF" stroke={c1} strokeWidth="2" />
       </svg>
-      <div className="border-t border-[#E4DDD2] bg-white p-3.5">
+      <div className="border-t border-[var(--border-hairline)] bg-[var(--surface-elevated)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Badge tone="ochre">Editorial SVG Composer</Badge>
-          <span className="text-[11px] text-[#535963]">{traitsIllustrated.join(' · ')}</span>
+          <Badge tone="ochre">Editorial SVG Keepsake</Badge>
+          <span className="text-[11px] text-[var(--ink-secondary)]">
+            {traitsIllustrated.join(' · ')}
+          </span>
         </div>
-        <p className="mt-1.5 text-xs text-[#15181C]">{caption}</p>
+        <p className="mt-2 text-xs leading-relaxed text-[var(--ink-primary)]">{caption}</p>
       </div>
     </div>
   );
@@ -120,24 +128,27 @@ export function Stage4FutureStudio({
   busy: boolean;
   error: string | null;
 }) {
+  const { theme } = useKindredTheme();
   const activeMatch =
     activeMatches.find((m) => m.id === selectedMatchId) ?? activeMatches[0] ?? null;
 
   const [activeTab, setActiveTab] = useState<'date_nights' | 'world_adventure' | 'future_family'>(
     'date_nights',
   );
+  const [selectedStopIndex, setSelectedStopIndex] = useState(0);
+  const [copiedSummary, setCopiedSummary] = useState(false);
 
   if (!activeMatch) {
     return (
-      <div className="editorial-card rounded-3xl p-10 text-center">
-        <Lock className="mx-auto h-10 w-10 text-[#C89B54]" />
-        <h2 className="font-editorial mt-3 text-2xl font-semibold text-[#15181C]">
+      <SpotlightCard className="p-10 text-center">
+        <Lock className="mx-auto h-10 w-10 text-[var(--accent-amber)]" />
+        <h2 className="font-editorial mt-3 text-3xl font-normal text-[var(--ink-primary)]">
           Future Simulation Studio Is Consent-Gated
         </h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-[#535963]">
+        <p className="mx-auto mt-2 max-w-md text-sm text-[var(--ink-secondary)]">
           Accept an 80%+ match into your Focused Cohort first so both partners can mutually unlock the &ldquo;What If?&rdquo; Simulator.
         </p>
-      </div>
+      </SpotlightCard>
     );
   }
 
@@ -147,12 +158,49 @@ export function Stage4FutureStudio({
   const consent = activeMatch.sandboxConsent;
   const sim = simulationByMatchId[activeMatch.id] ?? null;
 
+  const handleCopyShareableCard = async () => {
+    if (!sim) return;
+    const summaryLines: string[] = [
+      `KindredAI "What If?" Studio — ${partner?.displayName ?? partnerId}`,
+    ];
+    if (sim.dateNightBlueprints) {
+      summaryLines.push(
+        `Date Nights: ${sim.dateNightBlueprints.map((d) => `${d.stageLabel} (${d.title})`).join(' | ')}`,
+      );
+    }
+    if (sim.worldAdventure) {
+      summaryLines.push(
+        `Adventure: ${sim.worldAdventure.tripTitle} — ${sim.worldAdventure.dayByDayHighlights.map((s) => s.city).join(' -> ')}`,
+      );
+    }
+    if (sim.futureFamily) {
+      summaryLines.push(`Future Family Card: ${sim.futureFamily.mashupHeadline}`);
+    }
+    try {
+      await navigator.clipboard.writeText(summaryLines.join('\n'));
+      setCopiedSummary(true);
+      setTimeout(() => setCopiedSummary(false), 2000);
+    } catch {
+      // clipboard unavailable
+    }
+  };
+
+  const studioTabs: Array<{
+    id: 'date_nights' | 'world_adventure' | 'future_family';
+    label: string;
+    icon: React.ReactNode;
+  }> = [
+    { id: 'date_nights', label: 'Date Night Blueprints', icon: <CalendarHeart className="h-3.5 w-3.5" /> },
+    { id: 'world_adventure', label: 'Around-the-World Adventure', icon: <Globe2 className="h-3.5 w-3.5" /> },
+    { id: 'future_family', label: 'Future Family Visualizer (Opt-In)', icon: <Baby className="h-3.5 w-3.5" /> },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Match & Dual-Consent Gate Header */}
-      <section className="editorial-card rounded-3xl p-5 sm:p-6">
+      {/* Tactile Dual-Consent Gate Header */}
+      <SpotlightCard className="p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+          <div className="max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={consent.mutuallyUnlocked ? 'sage' : 'ochre'}>
                 {consent.mutuallyUnlocked ? (
@@ -171,7 +219,7 @@ export function Stage4FutureStudio({
                 <select
                   value={activeMatch.id}
                   onChange={(e) => onSelectMatch(e.target.value)}
-                  className="h-7 rounded-lg border border-[#DFD7CA] bg-white px-2 text-xs"
+                  className="h-7 rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)] px-2.5 text-xs text-[var(--ink-primary)]"
                 >
                   {activeMatches.map((m) => {
                     const pid = m.userAId === currentUserId ? m.userBId : m.userAId;
@@ -185,23 +233,26 @@ export function Stage4FutureStudio({
                 </select>
               )}
             </div>
-            <h2 className="font-editorial mt-2 text-2xl font-semibold text-[#15181C]">
-              &ldquo;What If?&rdquo; Relationship Studio · {partner?.displayName ?? partnerId}
+            <h2 className="font-editorial mt-2.5 text-3xl font-normal text-[var(--ink-primary)] sm:text-4xl">
+              &ldquo;What If?&rdquo; Relationship Studio ·{' '}
+              <em className="italic text-[var(--accent-coral)]">{partner?.displayName ?? partnerId}</em>
             </h2>
-            <p className="mt-1 text-xs text-[#535963]">{consent.sufficiencyReason}</p>
+            <p className="mt-1 text-xs text-[var(--ink-secondary)]">{consent.sufficiencyReason}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {!consent.mutuallyUnlocked ? (
-              <Button
-                data-testid="unlock-future-sandbox-button"
-                variant="sage"
-                disabled={busy || !consent.aiSufficiencyMet}
-                onClick={() => onToggleConsent(activeMatch.id, true)}
-              >
-                <Unlock className="h-4 w-4" />
-                Unlock Future Sandbox
-              </Button>
+              <div className="rounded-2xl border border-[var(--accent-sage)]/30 bg-[var(--accent-sage-soft)] p-2">
+                <Button
+                  data-testid="unlock-future-sandbox-button"
+                  variant="sage"
+                  disabled={busy || !consent.aiSufficiencyMet}
+                  onClick={() => onToggleConsent(activeMatch.id, true)}
+                >
+                  <Unlock className="h-4 w-4" />
+                  Unlock Future Sandbox
+                </Button>
+              </div>
             ) : (
               <>
                 <Button
@@ -210,8 +261,23 @@ export function Stage4FutureStudio({
                   onClick={() => onGenerateModule(activeMatch.id, 'all')}
                 >
                   <Sparkles className="h-4 w-4" />
-                  {busy ? 'Generating...' : 'Generate Full Future Studio'}
+                  {busy ? 'Composing Editorial Spread...' : 'Generate Full Future Studio'}
                 </Button>
+                {sim && (
+                  <Button variant="outline" size="sm" onClick={handleCopyShareableCard}>
+                    {copiedSummary ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-[var(--accent-sage)]" />
+                        Copied Card
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        Share Summary
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -226,53 +292,54 @@ export function Stage4FutureStudio({
         </div>
 
         {!consent.aiSufficiencyMet && (
-          <div className="mt-4 flex items-center gap-2 rounded-2xl border border-[#C89B54]/40 bg-[#C89B54]/10 px-4 py-3 text-xs text-[#8A6427]">
+          <div className="mt-4 flex items-center gap-2 rounded-2xl border border-[var(--accent-amber)]/35 bg-[var(--accent-amber-soft)] px-4 py-3 text-xs text-[var(--accent-amber)]">
             <ShieldAlert className="h-4 w-4 shrink-0" />
             <span>
               Anti-future-faking guardrail: both Wingman blueprints need at least 60% onboarding depth before this gate can unlock.
             </span>
           </div>
         )}
-      </section>
+      </SpotlightCard>
 
       {error && (
-        <div className="rounded-2xl border border-[#9B3B2E]/30 bg-[#9B3B2E]/10 px-4 py-3 text-sm text-[#9B3B2E]">
+        <div className="rounded-2xl border border-[var(--accent-danger)]/35 bg-[var(--accent-danger-soft)] px-4 py-3 text-sm text-[var(--accent-danger)]">
           {error}
         </div>
       )}
 
-      {/* Unlocked Studio Tabs */}
+      {/* Unlocked Studio Magazine Spreads */}
       {consent.mutuallyUnlocked && (
-        <section className="editorial-card rounded-3xl p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E4DDD2] pb-4">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant={activeTab === 'date_nights' ? 'primary' : 'outline'}
-                onClick={() => setActiveTab('date_nights')}
-              >
-                <CalendarHeart className="h-3.5 w-3.5" />
-                Date Night Blueprints
-              </Button>
-              <Button
-                size="sm"
-                variant={activeTab === 'world_adventure' ? 'primary' : 'outline'}
-                onClick={() => setActiveTab('world_adventure')}
-              >
-                <Globe2 className="h-3.5 w-3.5" />
-                Around-the-World Adventure
-              </Button>
-              <Button
-                size="sm"
-                variant={activeTab === 'future_family' ? 'primary' : 'outline'}
-                onClick={() => setActiveTab('future_family')}
-              >
-                <Baby className="h-3.5 w-3.5" />
-                Future Family Visualizer (Opt-In)
-              </Button>
+        <SpotlightCard className="p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-hairline)] pb-4">
+            <div className="flex flex-wrap gap-1.5 rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-subtle)]/75 p-1">
+              {studioTabs.map((tab) => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                      active ? 'text-white' : 'text-[var(--ink-secondary)] hover:text-[var(--ink-primary)]'
+                    }`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="future-studio-tab"
+                        transition={SNAPPY_SPRING}
+                        className="absolute inset-0 rounded-xl bg-[var(--accent-coral)] shadow-xs"
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <label className="flex items-center gap-2 text-xs text-[#535963] cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-[var(--ink-secondary)] cursor-pointer">
               <Switch
                 checked={consent.familyVisualizerOptIn}
                 onCheckedChange={(val) => onToggleFamilyOptIn(activeMatch.id, val)}
@@ -282,12 +349,12 @@ export function Stage4FutureStudio({
             </label>
           </div>
 
-          <div className="mt-5">
-            {/* Tab 1: Date Nights */}
+          <div className="mt-6">
+            {/* Tab 1: Editorial Date Night Magazine Spread */}
             {activeTab === 'date_nights' && (
               <div className="space-y-4">
                 {!sim?.dateNightBlueprints ? (
-                  <div className="py-8 text-center">
+                  <div className="py-10 text-center">
                     <Button
                       disabled={busy}
                       onClick={() => onGenerateModule(activeMatch.id, 'date_nights')}
@@ -297,42 +364,53 @@ export function Stage4FutureStudio({
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {sim.dateNightBlueprints.map((concept) => (
-                      <article
+                    {sim.dateNightBlueprints.map((concept, idx) => (
+                      <motion.article
                         key={concept.stageLabel}
-                        className="rounded-2xl border border-[#E4DDD2] bg-[#FAF7F2] p-4 space-y-2.5"
+                        variants={bentoCardVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ ...KINDRED_SPRING, delay: idx * 0.06 }}
+                        className="flex flex-col justify-between space-y-3 rounded-3xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)]/85 p-5"
                       >
-                        <div className="flex items-center justify-between">
-                          <Badge tone="terracotta">{concept.stageLabel}</Badge>
-                          <span className="font-mono-label text-[11px] text-[#535963]">
-                            {concept.estimatedBudget}
-                          </span>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge tone="terracotta">{concept.stageLabel}</Badge>
+                            <span className="font-mono-label text-[11px] text-[var(--ink-muted)]">
+                              {concept.estimatedBudget}
+                            </span>
+                          </div>
+                          <h3 className="font-editorial text-2xl font-normal text-[var(--ink-primary)]">
+                            {concept.title}
+                          </h3>
+                          <p className="text-xs text-[var(--ink-secondary)]">
+                            <strong className="text-[var(--ink-primary)]">Venue Vibe:</strong>{' '}
+                            {concept.venueVibe}
+                          </p>
+                          <p className="text-xs leading-relaxed text-[var(--ink-primary)]">
+                            {concept.activity}
+                          </p>
                         </div>
-                        <h3 className="font-editorial text-lg font-semibold text-[#15181C]">
-                          {concept.title}
-                        </h3>
-                        <p className="text-xs text-[#535963]">
-                          <strong>Vibe:</strong> {concept.venueVibe}
-                        </p>
-                        <p className="text-xs leading-relaxed text-[#15181C]">
-                          {concept.activity}
-                        </p>
-                        <p className="rounded-xl bg-white p-2.5 text-[11px] text-[#42614C] border border-[#E4DDD2]">
-                          <strong>Starter:</strong> &ldquo;{concept.conversationStarter}&rdquo;
-                        </p>
-                        <p className="text-[11px] text-[#535963]">{concept.whyItFitsBoth}</p>
-                      </article>
+                        <div className="space-y-2 border-t border-[var(--border-hairline)] pt-3">
+                          <p className="rounded-2xl border border-[var(--accent-sage)]/30 bg-[var(--accent-sage-soft)] p-3 text-[11px] leading-relaxed text-[var(--accent-sage)]">
+                            <strong>Starter:</strong> &ldquo;{concept.conversationStarter}&rdquo;
+                          </p>
+                          <p className="text-[11px] text-[var(--ink-secondary)]">
+                            {concept.whyItFitsBoth}
+                          </p>
+                        </div>
+                      </motion.article>
                     ))}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Tab 2: World Adventure */}
+            {/* Tab 2: 3D Globe World Adventure Simulator */}
             {activeTab === 'world_adventure' && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {!sim?.worldAdventure ? (
-                  <div className="py-8 text-center">
+                  <div className="py-10 text-center">
                     <Button
                       disabled={busy}
                       onClick={() => onGenerateModule(activeMatch.id, 'world_adventure')}
@@ -341,38 +419,67 @@ export function Stage4FutureStudio({
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div>
-                      <h3 className="font-editorial text-xl font-semibold text-[#15181C]">
+                      <span className="font-mono-label text-[10px] uppercase tracking-wider text-[var(--accent-sage)]">
+                        Global Expedition Dossier
+                      </span>
+                      <h3 className="font-editorial mt-1 text-3xl font-normal text-[var(--ink-primary)]">
                         {sim.worldAdventure.tripTitle}
                       </h3>
-                      <p className="mt-1 text-xs text-[#535963]">
+                      <p className="mt-1 text-xs leading-relaxed text-[var(--ink-secondary)]">
                         {sim.worldAdventure.routeSummary}
                       </p>
                     </div>
+
+                    {/* Signature WebGL Experience #3: Interactive 3D Geodesic Adventure Globe */}
+                    <DreamGlobeDynamic
+                      stops={sim.worldAdventure.dayByDayHighlights}
+                      selectedStopIndex={Math.min(
+                        selectedStopIndex,
+                        Math.max(0, sim.worldAdventure.dayByDayHighlights.length - 1),
+                      )}
+                      onSelectStop={(idx) => setSelectedStopIndex(idx)}
+                      theme={theme}
+                    />
+
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                      {sim.worldAdventure.dayByDayHighlights.map((stop, idx) => (
-                        <div
-                          key={idx}
-                          className="rounded-2xl border border-[#E4DDD2] bg-[#FAF7F2] p-4 space-y-1.5"
-                        >
-                          <Badge tone="sage">
-                            {stop.dayRange} · {stop.city}
-                          </Badge>
-                          <p className="text-xs leading-relaxed text-[#15181C]">
-                            {stop.highlight}
-                          </p>
-                          <p className="text-[11px] text-[#535963]">{stop.partnerBalanceNote}</p>
-                        </div>
-                      ))}
+                      {sim.worldAdventure.dayByDayHighlights.map((stop, idx) => {
+                        const isFocused = idx === selectedStopIndex;
+                        return (
+                          <motion.button
+                            key={idx}
+                            type="button"
+                            whileTap={{ scale: 0.98 }}
+                            transition={KINDRED_SPRING}
+                            onClick={() => setSelectedStopIndex(idx)}
+                            className={`space-y-2 rounded-3xl border p-4 text-left transition cursor-pointer ${
+                              isFocused
+                                ? 'border-[var(--accent-coral)] bg-[var(--surface-elevated)] shadow-md'
+                                : 'border-[var(--border-hairline)] bg-[var(--surface-subtle)]/70 hover:border-[var(--border-strong)]'
+                            }`}
+                          >
+                            <Badge tone={isFocused ? 'terracotta' : 'sage'}>
+                              {stop.dayRange} · {stop.city}
+                            </Badge>
+                            <p className="text-xs leading-relaxed text-[var(--ink-primary)]">
+                              {stop.highlight}
+                            </p>
+                            <p className="text-[11px] text-[var(--ink-secondary)]">
+                              {stop.partnerBalanceNote}
+                            </p>
+                          </motion.button>
+                        );
+                      })}
                     </div>
-                    <div className="rounded-2xl border border-[#E4DDD2] bg-white p-4 text-xs text-[#535963] space-y-1">
+
+                    <div className="grid grid-cols-1 gap-3 rounded-3xl border border-[var(--border-hairline)] bg-[var(--surface-subtle)]/70 p-4 text-xs text-[var(--ink-secondary)] sm:grid-cols-2">
                       <p>
-                        <strong className="text-[#15181C]">Packing &amp; Vibe Match:</strong>{' '}
+                        <strong className="text-[var(--ink-primary)]">Packing &amp; Vibe Match:</strong>{' '}
                         {sim.worldAdventure.packingAndVibeMatch}
                       </p>
                       <p>
-                        <strong className="text-[#15181C]">Travel Style Balance:</strong>{' '}
+                        <strong className="text-[var(--ink-primary)]">Travel Style Balance:</strong>{' '}
                         {sim.worldAdventure.travelStyleBalance}
                       </p>
                     </div>
@@ -381,20 +488,20 @@ export function Stage4FutureStudio({
               </div>
             )}
 
-            {/* Tab 3: Future Family Visualizer */}
+            {/* Tab 3: Collectible Future Family Keepsake Spread */}
             {activeTab === 'future_family' && (
               <div className="space-y-4">
                 {!consent.familyVisualizerOptIn ? (
-                  <div className="rounded-2xl border border-dashed border-[#DFD7CA] p-8 text-center space-y-3">
-                    <p className="text-sm font-medium text-[#15181C]">
+                  <div className="space-y-3 rounded-3xl border border-dashed border-[var(--border-strong)] p-8 text-center">
+                    <p className="text-sm font-medium text-[var(--ink-primary)]">
                       Playful Future Family Visualizer Requires Explicit Opt-In
                     </p>
-                    <p className="mx-auto max-w-md text-xs text-[#535963]">
-                      Toggle <strong>Opt in to Future Family Visualizer</strong> above to generate a lighthearted personality mashup and portrait card.
+                    <p className="mx-auto max-w-md text-xs text-[var(--ink-secondary)]">
+                      Toggle <strong>Opt in to Future Family Visualizer</strong> above to generate a lighthearted personality mashup and keepsake portrait card.
                     </p>
                   </div>
                 ) : !sim?.futureFamily ? (
-                  <div className="py-8 text-center">
+                  <div className="py-10 text-center">
                     <Button
                       data-testid="generate-family-visualizer-button"
                       disabled={busy}
@@ -412,37 +519,38 @@ export function Stage4FutureStudio({
                       imageUrl={sim.futureFamily.portraitConcept.imageUrl}
                       renderMode={sim.futureFamily.portraitConcept.renderMode}
                     />
-                    <div className="space-y-3 rounded-2xl border border-[#E4DDD2] bg-[#FAF7F2] p-5">
-                      <h3 className="font-editorial text-xl font-semibold text-[#15181C]">
+                    <div className="space-y-3 rounded-3xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)]/85 p-5">
+                      <Badge tone="terracotta">Collectible Personality Blend</Badge>
+                      <h3 className="font-editorial text-2xl font-normal text-[var(--ink-primary)]">
                         {sim.futureFamily.mashupHeadline}
                       </h3>
-                      <p className="text-xs leading-relaxed text-[#15181C]">
+                      <p className="text-xs leading-relaxed text-[var(--ink-primary)]">
                         {sim.futureFamily.kidPersonalityBlend}
                       </p>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-xs">
-                        <div className="rounded-xl bg-white p-3 border border-[#E4DDD2]">
-                          <p className="font-semibold text-[#B85137]">Inherited Spark A</p>
-                          <ul className="mt-1 space-y-1 text-[#535963]">
+                      <div className="grid grid-cols-1 gap-2.5 text-xs sm:grid-cols-2">
+                        <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-subtle)]/75 p-3">
+                          <p className="font-semibold text-[var(--accent-coral)]">Inherited Spark A</p>
+                          <ul className="mt-1.5 space-y-1 text-[var(--ink-secondary)]">
                             {sim.futureFamily.inheritedFromUserA.map((t, i) => (
                               <li key={i}>• {t}</li>
                             ))}
                           </ul>
                         </div>
-                        <div className="rounded-xl bg-white p-3 border border-[#E4DDD2]">
-                          <p className="font-semibold text-[#42614C]">Inherited Spark B</p>
-                          <ul className="mt-1 space-y-1 text-[#535963]">
+                        <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-subtle)]/75 p-3">
+                          <p className="font-semibold text-[var(--accent-sage)]">Inherited Spark B</p>
+                          <ul className="mt-1.5 space-y-1 text-[var(--ink-secondary)]">
                             {sim.futureFamily.inheritedFromUserB.map((t, i) => (
                               <li key={i}>• {t}</li>
                             ))}
                           </ul>
                         </div>
                       </div>
-                      <p className="text-xs text-[#535963]">
-                        <strong className="text-[#15181C]">Sunday Ritual:</strong>{' '}
+                      <p className="text-xs text-[var(--ink-secondary)]">
+                        <strong className="text-[var(--ink-primary)]">Sunday Ritual:</strong>{' '}
                         {sim.futureFamily.sundayFamilyRitual}
                       </p>
-                      <p className="text-xs text-[#535963]">
-                        <strong className="text-[#15181C]">Dinner Debate:</strong>{' '}
+                      <p className="text-xs text-[var(--ink-secondary)]">
+                        <strong className="text-[var(--ink-primary)]">Dinner Debate:</strong>{' '}
                         {sim.futureFamily.dinnerTableDebateTopic}
                       </p>
                     </div>
@@ -451,7 +559,7 @@ export function Stage4FutureStudio({
               </div>
             )}
           </div>
-        </section>
+        </SpotlightCard>
       )}
     </div>
   );

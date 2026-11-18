@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { RotateCcw, Sparkles, UserPlus, Users, Archive } from 'lucide-react';
+import { Archive, Moon, RotateCcw, Sparkles, Sun, UserPlus, Users } from 'lucide-react';
 import { AvatarPortrait } from '@/components/ui/AvatarPortrait';
 import { Badge, Button, Modal } from '@/components/ui/primitives';
+import { useKindredTheme } from '@/lib/theme';
 import type { AvatarConfig, MatchDossier, SanitizedCandidate } from '@/lib/types/schemas';
 
 export interface WorkspaceUserSummary {
@@ -38,29 +39,52 @@ export function HeaderBar({
   onOpenCohort: () => void;
   onResetDemo: () => void;
 }) {
+  const { theme, toggleTheme } = useKindredTheme();
+
   return (
-    <header className="sticky top-0 z-30 border-b border-[#E4DDD2] bg-[#FAF7F2]/92 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-[var(--border-hairline)] bg-[var(--surface-glass-strong)] backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#15181C] text-[#FAF7F2] shadow-sm">
-            <Sparkles className="h-5 w-5 text-[#D96B4F]" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-elevated)] shadow-sm">
+            <Sparkles className="h-5 w-5 text-[var(--accent-coral)]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-editorial text-xl font-semibold tracking-tight text-[#15181C]">
+              <h1 className="font-editorial text-2xl font-normal tracking-tight text-[var(--ink-primary)]">
                 KindredAI
               </h1>
               <Badge tone="sage" className="hidden sm:inline-flex">
                 {aiMode === 'deterministic_simulation' ? 'Simulation Ready' : `Live ${aiMode}`}
               </Badge>
             </div>
-            <p className="text-[11px] text-[#535963]">
+            <p className="text-[11px] text-[var(--ink-muted)]">
               Fiduciary Wingman · Privacy-Safe Agent Lounge · Co-Op Play
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="theme-toggle-button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'nocturne' ? 'Editorial Alabaster' : 'Warm Nocturne'} theme`}
+            title="Switch visual theme"
+          >
+            {theme === 'nocturne' ? (
+              <>
+                <Sun className="h-3.5 w-3.5 text-[var(--accent-amber)]" />
+                <span className="hidden lg:inline">Alabaster</span>
+              </>
+            ) : (
+              <>
+                <Moon className="h-3.5 w-3.5 text-[var(--accent-coral)]" />
+                <span className="hidden lg:inline">Nocturne</span>
+              </>
+            )}
+          </Button>
+
           <label className="sr-only" htmlFor="account-switcher">
             Switch active user profile
           </label>
@@ -69,7 +93,7 @@ export function HeaderBar({
             data-testid="account-switcher"
             value={currentUser.id}
             onChange={(e) => onSwitchUser(e.target.value)}
-            className="h-9 rounded-xl border border-[#DFD7CA] bg-white px-3 text-xs font-medium text-[#15181C] shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#D96B4F]/40"
+            className="h-8 max-w-[175px] truncate rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)] px-3 text-xs font-medium text-[var(--ink-primary)] shadow-2xs focus:outline-none focus:ring-2 focus:ring-[var(--accent-coral)]/40 sm:max-w-none"
           >
             {users.map((u) => (
               <option key={u.id} value={u.id}>
@@ -85,19 +109,14 @@ export function HeaderBar({
             onClick={onOpenNewProfile}
           >
             <UserPlus className="h-3.5 w-3.5" />
-            <span>New Profile</span>
+            <span className="hidden sm:inline">New Profile</span>
           </Button>
 
           <Button
-            variant={activeCohortCount >= maxCohortSize ? 'terracotta' as never : 'outline'}
+            variant={activeCohortCount >= maxCohortSize ? 'terracotta' : 'outline'}
             size="sm"
             data-testid="focused-cohort-trigger"
             onClick={onOpenCohort}
-            className={
-              activeCohortCount >= maxCohortSize
-                ? 'border-[#D96B4F] bg-[#D96B4F]/12 text-[#B85137]'
-                : ''
-            }
           >
             <Users className="h-3.5 w-3.5" />
             <span>
@@ -171,6 +190,9 @@ export function NewProfileModal({
     });
   };
 
+  const inputClass =
+    'w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-3 py-2 text-sm text-[var(--ink-primary)] placeholder:text-[var(--ink-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-coral)]/40';
+
   return (
     <Modal
       open={open}
@@ -180,13 +202,13 @@ export function NewProfileModal({
     >
       <form onSubmit={handleSubmit} className="space-y-3">
         {error && (
-          <div className="rounded-xl border border-[#9B3B2E]/30 bg-[#9B3B2E]/10 px-3 py-2 text-xs text-[#9B3B2E]">
+          <div className="rounded-xl border border-[var(--accent-danger)]/35 bg-[var(--accent-danger-soft)] px-3 py-2 text-xs text-[var(--accent-danger)]">
             {error}
           </div>
         )}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-[#15181C]">
+            <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
               Display Name *
             </label>
             <input
@@ -194,11 +216,13 @@ export function NewProfileModal({
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g., Clara Chen"
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D96B4F]/40"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-[#15181C]">Age (18+) *</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
+              Age (18+) *
+            </label>
             <input
               required
               type="number"
@@ -206,63 +230,73 @@ export function NewProfileModal({
               max={120}
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D96B4F]/40"
+              className={inputClass}
             />
           </div>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-[#15181C]">Pronouns</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
+              Pronouns
+            </label>
             <input
               value={pronouns}
               onChange={(e) => setPronouns(e.target.value)}
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-[#15181C]">City</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
+              City
+            </label>
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-[#15181C]">Occupation</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
+              Occupation
+            </label>
             <input
               value={occupation}
               onChange={(e) => setOccupation(e.target.value)}
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-[#15181C]">Wingman Name</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
+              Wingman Name
+            </label>
             <input
               value={wingmanName}
               onChange={(e) => setWingmanName(e.target.value)}
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-[#15181C]">
+          <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
             Interests (comma-separated)
           </label>
           <input
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-[#15181C]">Bio Tagline</label>
+          <label className="mb-1 block text-xs font-medium text-[var(--ink-secondary)]">
+            Bio Tagline
+          </label>
           <textarea
             rows={2}
             value={bioTagline}
             onChange={(e) => setBioTagline(e.target.value)}
-            className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div className="flex justify-end gap-2 pt-2">
@@ -306,7 +340,7 @@ export function FocusedCohortModal({
     >
       <div className="space-y-3">
         {activeMatches.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#DFD7CA] bg-white/70 p-6 text-center text-sm text-[#535963]">
+          <div className="rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-subtle)]/50 p-6 text-center text-sm text-[var(--ink-secondary)]">
             Your Focused Cohort is empty. Visit the Agent Lounge to review compatibility dossiers and accept up to 3 connections.
           </div>
         ) : (
@@ -316,7 +350,7 @@ export function FocusedCohortModal({
             return (
               <div
                 key={match.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-[#E4DDD2] bg-white p-3.5"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-subtle)]/70 p-3.5"
               >
                 <div className="flex items-center gap-3">
                   {partner && (
@@ -328,12 +362,12 @@ export function FocusedCohortModal({
                   )}
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-[#15181C]">
+                      <span className="text-sm font-semibold text-[var(--ink-primary)]">
                         {partner?.displayName ?? partnerId}
                       </span>
                       <Badge tone="sage">{match.overallScore}% Match</Badge>
                     </div>
-                    <p className="text-xs text-[#535963]">{partner?.occupation}</p>
+                    <p className="text-xs text-[var(--ink-secondary)]">{partner?.occupation}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

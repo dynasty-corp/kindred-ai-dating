@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Bot, Gamepad2, HeartHandshake, Sparkles } from 'lucide-react';
 import { Stage2Discovery } from '@/components/discovery/Stage2Discovery';
 import { Stage4FutureStudio } from '@/components/future/Stage4FutureStudio';
@@ -12,6 +13,7 @@ import {
   NewProfileModal,
   type WorkspaceUserSummary,
 } from '@/components/shell/HeaderAndModals';
+import { KINDRED_SPRING, stageTransitionVariants } from '@/lib/motion';
 import type {
   AgentConversation,
   AgentPersona,
@@ -496,8 +498,10 @@ export default function KindredStudioPage() {
 
   if (!currentUser || !activePersona) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAF7F2] text-sm text-[#535963]">
-        Warming up KindredAI Studio...
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--surface-canvas)] text-sm text-[var(--ink-secondary)]">
+        <div className="h-9 w-9 animate-pulse rounded-2xl border border-[var(--border-hairline)] bg-[var(--accent-coral-soft)]" />
+        <span className="font-editorial text-2xl text-[var(--ink-primary)]">KindredAI</span>
+        <span className="text-xs text-[var(--ink-muted)]">Warming up your editorial studio...</span>
       </div>
     );
   }
@@ -513,151 +517,219 @@ export default function KindredStudioPage() {
     avatarConfig: currentUser.avatarConfig,
   };
 
-  const stageTabs: Array<{ id: StageTab; label: string; icon: React.ReactNode }> = [
-    { id: 'onboarding', label: '1. Wingman & Blueprint', icon: <HeartHandshake className="h-4 w-4" /> },
-    { id: 'discovery', label: '2. Agent Lounge', icon: <Bot className="h-4 w-4" /> },
-    { id: 'games', label: '3. Co-Op Arena & Chat', icon: <Gamepad2 className="h-4 w-4" /> },
-    { id: 'future', label: '4. What-If? Studio', icon: <Sparkles className="h-4 w-4" /> },
+  const stageTabs: Array<{ id: StageTab; label: string; shortLabel: string; icon: React.ReactNode }> = [
+    {
+      id: 'onboarding',
+      label: '1. My AI & Blueprint',
+      shortLabel: '1. My AI',
+      icon: <HeartHandshake className="h-4 w-4" />,
+    },
+    {
+      id: 'discovery',
+      label: '2. Agent Lounge',
+      shortLabel: '2. Lounge',
+      icon: <Bot className="h-4 w-4" />,
+    },
+    {
+      id: 'games',
+      label: '3. Co-Op Play & Chat',
+      shortLabel: '3. Co-Op',
+      icon: <Gamepad2 className="h-4 w-4" />,
+    },
+    {
+      id: 'future',
+      label: '4. What If? Studio',
+      shortLabel: '4. What If?',
+      icon: <Sparkles className="h-4 w-4" />,
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2]">
-      <HeaderBar
-        currentUser={currentUserSummary}
-        users={users}
-        activeCohortCount={activeCohortCount}
-        maxCohortSize={maxCohortSize}
-        aiMode={aiMode}
-        onSwitchUser={handleSwitchUser}
-        onOpenNewProfile={() => {
-          setProfileError(null);
-          setNewProfileOpen(true);
-        }}
-        onOpenCohort={() => setCohortModalOpen(true)}
-        onResetDemo={handleResetDemo}
-      />
+    <MotionConfig reducedMotion="user">
+      <div className="relative min-h-screen bg-[var(--surface-canvas)] text-[var(--ink-primary)]">
+        <HeaderBar
+          currentUser={currentUserSummary}
+          users={users}
+          activeCohortCount={activeCohortCount}
+          maxCohortSize={maxCohortSize}
+          aiMode={aiMode}
+          onSwitchUser={handleSwitchUser}
+          onOpenNewProfile={() => {
+            setProfileError(null);
+            setNewProfileOpen(true);
+          }}
+          onOpenCohort={() => setCohortModalOpen(true)}
+          onResetDemo={handleResetDemo}
+        />
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {/* 4-Stage Navigation Rail */}
-        <nav
-          aria-label="KindredAI 4-stage lifecycle"
-          className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4"
-        >
-          {stageTabs.map((t) => {
-            const active = stage === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                data-testid={`stage-tab-${t.id}`}
-                onClick={() => {
-                  setErrorMsg(null);
-                  setStage(t.id);
-                }}
-                className={`flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-xs font-semibold transition cursor-pointer ${
-                  active
-                    ? 'border-[#15181C] bg-[#15181C] text-[#FAF7F2] shadow-md'
-                    : 'border-[#E4DDD2] bg-white/80 text-[#535963] hover:bg-white hover:text-[#15181C]'
-                }`}
+        <main className="mx-auto max-w-7xl px-3.5 py-6 sm:px-6 lg:py-8">
+          {/* Anti-Fatigue Floating Glassmorphic 4-Stage Dock */}
+          <div className="mb-7 flex justify-center">
+            <nav
+              aria-label="KindredAI 4-stage lifecycle"
+              className="editorial-bento inline-grid w-full max-w-3xl grid-cols-2 gap-1.5 rounded-2xl p-1.5 sm:grid-cols-4 sm:rounded-full"
+            >
+              {stageTabs.map((t) => {
+                const active = stage === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    data-testid={`stage-tab-${t.id}`}
+                    onClick={() => {
+                      setErrorMsg(null);
+                      setStage(t.id);
+                    }}
+                    className={`relative flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors cursor-pointer sm:rounded-full ${
+                      active
+                        ? 'text-[var(--ink-primary)]'
+                        : 'text-[var(--ink-secondary)] hover:text-[var(--ink-primary)]'
+                    }`}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="kindred-stage-pill"
+                        transition={KINDRED_SPRING}
+                        className="absolute inset-0 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-elevated)] shadow-sm sm:rounded-full"
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      <span className={active ? 'text-[var(--accent-coral)]' : ''}>{t.icon}</span>
+                      <span className="hidden md:inline">{t.label}</span>
+                      <span className="md:hidden">{t.shortLabel}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {stage === 'onboarding' && (
+              <motion.div
+                key="stage-onboarding"
+                variants={stageTransitionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
-                {t.icon}
-                <span>{t.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+                <Stage1Onboarding
+                  user={currentUser}
+                  persona={activePersona}
+                  busy={busy}
+                  onSendMessage={handleSendWingmanMessage}
+                  onMutateBlueprint={handleMutateBlueprint}
+                  onGoToDiscovery={() => setStage('discovery')}
+                />
+              </motion.div>
+            )}
 
-        {stage === 'onboarding' && (
-          <Stage1Onboarding
-            user={currentUser}
-            persona={activePersona}
-            busy={busy}
-            onSendMessage={handleSendWingmanMessage}
-            onMutateBlueprint={handleMutateBlueprint}
-            onGoToDiscovery={() => setStage('discovery')}
-          />
-        )}
+            {stage === 'discovery' && (
+              <motion.div
+                key="stage-discovery"
+                variants={stageTransitionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <Stage2Discovery
+                  currentUserId={currentUser.id}
+                  candidates={candidates}
+                  matches={matches}
+                  conversations={conversations}
+                  selectedCandidateId={selectedCandidateId}
+                  onSelectCandidate={setSelectedCandidateId}
+                  onRunAgentMatch={handleRunAgentMatch}
+                  onDecideMatch={handleDecideMatch}
+                  onEnterCoopArena={(matchId) => {
+                    setSelectedMatchId(matchId);
+                    setStage('games');
+                  }}
+                  busyCandidateId={busyCandidateId}
+                  actionError={errorMsg}
+                />
+              </motion.div>
+            )}
 
-        {stage === 'discovery' && (
-          <Stage2Discovery
-            currentUserId={currentUser.id}
-            candidates={candidates}
-            matches={matches}
-            conversations={conversations}
-            selectedCandidateId={selectedCandidateId}
-            onSelectCandidate={setSelectedCandidateId}
-            onRunAgentMatch={handleRunAgentMatch}
-            onDecideMatch={handleDecideMatch}
-            onEnterCoopArena={(matchId) => {
-              setSelectedMatchId(matchId);
-              setStage('games');
-            }}
-            busyCandidateId={busyCandidateId}
-            actionError={errorMsg}
-          />
-        )}
+            {stage === 'games' && (
+              <motion.div
+                key="stage-games"
+                variants={stageTransitionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <Stage3GamesAndChat
+                  currentUserId={currentUser.id}
+                  activeMatches={activeCohortMatches}
+                  candidates={candidates}
+                  selectedMatchId={selectedMatchId}
+                  sessions={
+                    sessionsByMatch[selectedMatchId ?? activeCohortMatches[0]?.id ?? ''] ?? []
+                  }
+                  onSelectMatch={(matchId) => setSelectedMatchId(matchId)}
+                  onStartGame={handleStartGame}
+                  onSubmitBlindTrip={handleSubmitBlindTrip}
+                  onSubmitMysteryChoice={handleSubmitMysteryChoice}
+                  onSubmitWavelengthGuess={handleSubmitWavelengthGuess}
+                  onSendHumanChat={handleSendHumanChat}
+                  onGoToFutureStudio={() => setStage('future')}
+                  busy={busy}
+                  error={errorMsg}
+                />
+              </motion.div>
+            )}
 
-        {stage === 'games' && (
-          <Stage3GamesAndChat
-            currentUserId={currentUser.id}
-            activeMatches={activeCohortMatches}
-            candidates={candidates}
-            selectedMatchId={selectedMatchId}
-            sessions={
-              sessionsByMatch[selectedMatchId ?? activeCohortMatches[0]?.id ?? ''] ?? []
-            }
-            onSelectMatch={(matchId) => setSelectedMatchId(matchId)}
-            onStartGame={handleStartGame}
-            onSubmitBlindTrip={handleSubmitBlindTrip}
-            onSubmitMysteryChoice={handleSubmitMysteryChoice}
-            onSubmitWavelengthGuess={handleSubmitWavelengthGuess}
-            onSendHumanChat={handleSendHumanChat}
-            onGoToFutureStudio={() => setStage('future')}
-            busy={busy}
-            error={errorMsg}
-          />
-        )}
+            {stage === 'future' && (
+              <motion.div
+                key="stage-future"
+                variants={stageTransitionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <Stage4FutureStudio
+                  currentUserId={currentUser.id}
+                  activeMatches={activeCohortMatches}
+                  candidates={candidates}
+                  selectedMatchId={selectedMatchId}
+                  simulationByMatchId={simulationByMatch}
+                  onSelectMatch={(matchId) => setSelectedMatchId(matchId)}
+                  onToggleConsent={handleToggleConsent}
+                  onToggleFamilyOptIn={handleToggleFamilyOptIn}
+                  onGenerateModule={handleGenerateFutureModule}
+                  busy={busy}
+                  error={errorMsg}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
 
-        {stage === 'future' && (
-          <Stage4FutureStudio
-            currentUserId={currentUser.id}
-            activeMatches={activeCohortMatches}
-            candidates={candidates}
-            selectedMatchId={selectedMatchId}
-            simulationByMatchId={simulationByMatch}
-            onSelectMatch={(matchId) => setSelectedMatchId(matchId)}
-            onToggleConsent={handleToggleConsent}
-            onToggleFamilyOptIn={handleToggleFamilyOptIn}
-            onGenerateModule={handleGenerateFutureModule}
-            busy={busy}
-            error={errorMsg}
-          />
-        )}
-      </main>
+        <NewProfileModal
+          open={newProfileOpen}
+          onOpenChange={setNewProfileOpen}
+          onCreate={handleCreateProfile}
+          busy={busy}
+          error={profileError}
+        />
 
-      <NewProfileModal
-        open={newProfileOpen}
-        onOpenChange={setNewProfileOpen}
-        onCreate={handleCreateProfile}
-        busy={busy}
-        error={profileError}
-      />
-
-      <FocusedCohortModal
-        open={cohortModalOpen}
-        onOpenChange={setCohortModalOpen}
-        activeMatches={activeCohortMatches}
-        candidates={candidates}
-        currentUserId={currentUser.id}
-        maxCohortSize={maxCohortSize}
-        onArchiveMatch={async (matchId) => {
-          await handleDecideMatch(matchId, 'archive');
-        }}
-        onOpenMatchInArena={(matchId) => {
-          setSelectedMatchId(matchId);
-          setStage('games');
-        }}
-      />
-    </div>
+        <FocusedCohortModal
+          open={cohortModalOpen}
+          onOpenChange={setCohortModalOpen}
+          activeMatches={activeCohortMatches}
+          candidates={candidates}
+          currentUserId={currentUser.id}
+          maxCohortSize={maxCohortSize}
+          onArchiveMatch={async (matchId) => {
+            await handleDecideMatch(matchId, 'archive');
+          }}
+          onOpenMatchInArena={(matchId) => {
+            setSelectedMatchId(matchId);
+            setStage('games');
+          }}
+        />
+      </div>
+    </MotionConfig>
   );
 }

@@ -11,9 +11,13 @@ import {
   Plus,
   Send,
   ShieldCheck,
+  Sparkles,
   Trash2,
 } from 'lucide-react';
-import { Badge, Button, Switch } from '@/components/ui/primitives';
+import { Badge, Button, SpotlightCard, Switch } from '@/components/ui/primitives';
+import { AuraShaderDynamic } from '@/components/webgl/DynamicWebGL';
+import { KINDRED_SPRING, bentoCardVariants, bentoGridVariants } from '@/lib/motion';
+import { useKindredTheme } from '@/lib/theme';
 import {
   BLUEPRINT_DIMENSIONS,
   type AgentPersona,
@@ -55,6 +59,7 @@ export function Stage1Onboarding({
   onMutateBlueprint: (payload: Record<string, unknown>) => Promise<void>;
   onGoToDiscovery: () => void;
 }) {
+  const { theme } = useKindredTheme();
   const [draft, setDraft] = useState('');
   const [isPrivateTurn, setIsPrivateTurn] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,6 +70,10 @@ export function Stage1Onboarding({
   const [newTitle, setNewTitle] = useState('');
   const [newSummary, setNewSummary] = useState('');
   const [newVisibility, setNewVisibility] = useState<'shareable' | 'private'>('shareable');
+
+  const populatedDimensions = new Set(
+    user.blueprint.filter((b) => b.visibility !== 'redacted').map((b) => b.dimension),
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,122 +114,168 @@ export function Stage1Onboarding({
     setShowAddForm(false);
   };
 
+  const inputClass =
+    'w-full rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-4 py-3 text-sm text-[var(--ink-primary)] placeholder:text-[var(--ink-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-coral)]/40';
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-      {/* Wingman Conversation Panel */}
-      <section className="editorial-card flex flex-col rounded-3xl p-5 sm:p-6 lg:col-span-7">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[#E4DDD2] pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge tone="terracotta">Fiduciary Wingman: {persona.wingmanName}</Badge>
-              <Badge tone="sage">Coach Only · Anti-Parasocial</Badge>
-            </div>
-            <h2 className="font-editorial mt-2 text-2xl font-semibold text-[#15181C]">
-              Deep Onboarding Conversation
-            </h2>
-            <p className="mt-1 text-xs text-[#535963]">
-              Your wingman learns your values, conflict repair style, and dealbreakers — never acting as a romantic substitute.
-            </p>
+    <section className="relative overflow-hidden rounded-[2rem] border border-[var(--border-hairline)] p-4 sm:p-6 lg:p-8">
+      {/* Signature WebGL Experience #1: Ambient Aura Mesh Backdrop */}
+      <AuraShaderDynamic depthProgress={user.onboardingProgress} theme={theme} />
+
+      {/* Editorial Hero Strip */}
+      <div className="relative z-10 mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--border-hairline)] pb-6">
+        <div className="max-w-2xl">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="terracotta">
+              <Sparkles className="h-3 w-3" />
+              Fiduciary Wingman: {persona.wingmanName}
+            </Badge>
+            <Badge tone="sage">Coach Only · Anti-Parasocial</Badge>
           </div>
-          <div className="text-right">
-            <span className="font-mono-label text-xs font-semibold text-[#15181C]">
-              {user.onboardingProgress}% Blueprint Depth
-            </span>
-            <div className="mt-1.5 h-2 w-36 overflow-hidden rounded-full bg-[#E4DDD2]">
-              <div
-                className="h-full rounded-full bg-[#6E8F78] transition-all duration-500"
-                style={{ width: `${user.onboardingProgress}%` }}
-              />
-            </div>
-          </div>
+          <h2 className="font-editorial mt-3 text-3xl leading-[1.06] font-normal text-[var(--ink-primary)] sm:text-4xl lg:text-5xl">
+            Speak honestly once. Let your <em className="italic text-[var(--accent-coral)]">wingman</em> negotiate the rest.
+          </h2>
+          <p className="mt-2.5 max-w-xl text-xs leading-relaxed text-[var(--ink-secondary)] sm:text-sm">
+            Zero performative bios or endless swiping. Share what truly makes a partnership work for you—with instant per-insight privacy locks.
+          </p>
         </div>
 
-        {/* Messages */}
-        <div
-          data-testid="wingman-messages"
-          className="flex-1 space-y-3 overflow-y-auto pr-1 max-h-[420px] min-h-[260px]"
-        >
-          {user.onboardingMessages.map((msg) => (
+        <div className="editorial-bento rounded-2xl px-4 py-3 text-right">
+          <div className="flex items-center justify-end gap-2">
+            <span className="font-mono-label text-[11px] uppercase tracking-wider text-[var(--ink-muted)]">
+              Blueprint Depth
+            </span>
+            <span className="font-mono-label text-sm font-semibold text-[var(--accent-sage)]">
+              {user.onboardingProgress}%
+            </span>
+          </div>
+          <div className="mt-2 h-2 w-40 overflow-hidden rounded-full bg-[var(--surface-subtle)]">
             <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-[#15181C] text-[#FAF7F2]'
-                    : 'border border-[#E4DDD2] bg-[#FAF7F2] text-[#15181C]'
+              className="h-full rounded-full bg-gradient-to-r from-[var(--accent-coral)] via-[var(--accent-amber)] to-[var(--accent-sage)]"
+              initial={{ width: 0 }}
+              animate={{ width: `${user.onboardingProgress}%` }}
+              transition={KINDRED_SPRING}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Split-Screen Editorial Bento Grid */}
+      <div className="relative z-10 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left: Conversational AI Prompt Stage */}
+        <SpotlightCard className="flex flex-col p-5 sm:p-6 lg:col-span-7">
+          <div className="mb-4 flex items-center justify-between gap-2 border-b border-[var(--border-hairline)] pb-3">
+            <div>
+              <h3 className="font-editorial text-2xl font-normal text-[var(--ink-primary)]">
+                Deep Onboarding Dialogue
+              </h3>
+              <p className="text-xs text-[var(--ink-secondary)]">
+                Conversing as <strong className="text-[var(--ink-primary)]">{user.displayName}</strong> · Grounded advisor, never a romantic substitute
+              </p>
+            </div>
+            {user.onboardingProgress >= 60 && (
+              <Button variant="sage" size="sm" onClick={onGoToDiscovery}>
+                Enter Agent Lounge
+              </Button>
+            )}
+          </div>
+
+          <div
+            data-testid="wingman-messages"
+            className="kindred-scroll flex-1 space-y-3 overflow-y-auto pr-1 max-h-[420px] min-h-[260px]"
+          >
+            {user.onboardingMessages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={KINDRED_SPRING}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-[var(--ink-primary)] text-[var(--surface-canvas)] shadow-md'
+                      : 'border border-[var(--border-hairline)] bg-[var(--surface-elevated)]/90 text-[var(--ink-primary)]'
+                  }`}
+                >
+                  <div className="mb-1 flex items-center justify-between gap-3 text-[11px] opacity-75">
+                    <span className="font-semibold">
+                      {msg.role === 'user' ? user.displayName : `${persona.wingmanName} (Wingman)`}
+                    </span>
+                    <span className="flex items-center gap-1 font-mono-label text-[10px]">
+                      {msg.isPrivateTurn && <Lock className="h-3 w-3 text-[var(--accent-amber)]" />}
+                      {formatTimestamp(msg.timestamp)}
+                    </span>
+                  </div>
+                  <p>{msg.content}</p>
+                  {msg.guardrailNote && (
+                    <p className="mt-2 rounded-xl border border-[var(--accent-coral)]/25 bg-[var(--accent-coral-soft)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--accent-coral)]">
+                      {msg.guardrailNote}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+
+            {busy && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)]/90 px-4 py-2.5 text-xs text-[var(--ink-secondary)]">
+                  <span className="inline-flex gap-1">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--accent-coral)]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--accent-amber)] [animation-delay:0.15s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--accent-sage)] [animation-delay:0.3s]" />
+                  </span>
+                  <span>{persona.wingmanName} is distilling your reflections into your Blueprint...</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sample Reflection Chips */}
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {QUICK_PROMPTS.map((q, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setDraft(q)}
+                className="rounded-full border border-[var(--border-hairline)] bg-[var(--surface-subtle)]/80 px-3 py-1 text-[11px] text-[var(--ink-secondary)] transition hover:border-[var(--accent-coral)]/45 hover:text-[var(--ink-primary)] cursor-pointer"
+              >
+                Sample reflection #{i + 1}
+              </button>
+            ))}
+          </div>
+
+          {/* Composer */}
+          <form
+            onSubmit={handleSubmit}
+            className="mt-3 space-y-3 border-t border-[var(--border-hairline)] pt-3"
+          >
+            <textarea
+              data-testid="wingman-input"
+              rows={3}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Share what matters to you in values, conflict repair, humor, or dealbreakers..."
+              className={inputClass}
+            />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <label
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition cursor-pointer ${
+                  isPrivateTurn
+                    ? 'border-[var(--accent-amber)]/45 bg-[var(--accent-amber-soft)] text-[var(--accent-amber)]'
+                    : 'border-[var(--border-hairline)] bg-[var(--surface-subtle)]/60 text-[var(--ink-secondary)]'
                 }`}
               >
-                <div className="mb-1 flex items-center justify-between gap-3 text-[11px] opacity-75">
-                  <span className="font-semibold">
-                    {msg.role === 'user' ? user.displayName : `${persona.wingmanName} (Wingman)`}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    {msg.isPrivateTurn && <Lock className="h-3 w-3 text-[#C89B54]" />}
-                    {formatTimestamp(msg.timestamp)}
-                  </span>
-                </div>
-                <p>{msg.content}</p>
-                {msg.guardrailNote && (
-                  <p className="mt-2 rounded-lg bg-[#D96B4F]/12 px-2.5 py-1 text-[11px] font-medium text-[#B85137]">
-                    {msg.guardrailNote}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          ))}
-          {busy && (
-            <div className="flex justify-start">
-              <div className="rounded-2xl border border-[#E4DDD2] bg-[#FAF7F2] px-4 py-2.5 text-xs text-[#535963]">
-                {persona.wingmanName} is distilling your reflections into your Blueprint...
-              </div>
-            </div>
-          )}
-        </div>
+                <Switch
+                  checked={isPrivateTurn}
+                  onCheckedChange={setIsPrivateTurn}
+                  aria-label="Mark this turn private"
+                />
+                <Lock className="h-3.5 w-3.5 text-[var(--accent-amber)]" />
+                <span>Keep this turn strictly Private</span>
+              </label>
 
-        {/* Quick prompts */}
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {QUICK_PROMPTS.map((q, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setDraft(q)}
-              className="rounded-full border border-[#E4DDD2] bg-[#FAF7F2] px-2.5 py-1 text-[11px] text-[#535963] hover:bg-[#F2ECE3] hover:text-[#15181C] cursor-pointer"
-            >
-              Sample reflection #{i + 1}
-            </button>
-          ))}
-        </div>
-
-        {/* Composer */}
-        <form onSubmit={handleSubmit} className="mt-3 space-y-2.5 border-t border-[#E4DDD2] pt-3">
-          <textarea
-            data-testid="wingman-input"
-            rows={3}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Share what matters to you in values, conflict repair, humor, or dealbreakers..."
-            className="w-full rounded-2xl border border-[#DFD7CA] bg-white px-4 py-3 text-sm text-[#15181C] focus:outline-none focus:ring-2 focus:ring-[#D96B4F]/40"
-          />
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <label className="flex items-center gap-2 text-xs text-[#535963] cursor-pointer">
-              <Switch
-                checked={isPrivateTurn}
-                onCheckedChange={setIsPrivateTurn}
-                aria-label="Mark this turn private"
-              />
-              <Lock className="h-3.5 w-3.5 text-[#C89B54]" />
-              <span>Keep this turn strictly Private (never shared with other agents)</span>
-            </label>
-            <div className="flex items-center gap-2">
-              {user.onboardingProgress >= 60 && (
-                <Button variant="sage" size="sm" onClick={onGoToDiscovery}>
-                  Enter Agent Lounge
-                </Button>
-              )}
               <Button
                 type="submit"
                 data-testid="wingman-send-button"
@@ -230,216 +285,242 @@ export function Stage1Onboarding({
                 <span>Send to Wingman</span>
               </Button>
             </div>
-          </div>
-        </form>
-      </section>
-
-      {/* Live Relationship Blueprint Sidebar */}
-      <aside
-        data-testid="relationship-blueprint-sidebar"
-        className="editorial-card flex flex-col rounded-3xl p-5 sm:p-6 lg:col-span-5"
-      >
-        <div className="mb-4 flex items-start justify-between gap-2 border-b border-[#E4DDD2] pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-[#6E8F78]" />
-              <span className="font-mono-label text-[11px] font-semibold uppercase tracking-wider text-[#42614C]">
-                Live Privacy Controls
-              </span>
-            </div>
-            <h3 className="font-editorial mt-1 text-xl font-semibold text-[#15181C]">
-              Relationship Blueprint
-            </h3>
-            <p className="mt-0.5 text-xs text-[#535963]">
-              Only <strong className="text-[#15181C]">Shareable</strong> items enter Agent Lounge packets.{' '}
-              <strong className="text-[#15181C]">Private</strong> &amp;{' '}
-              <strong className="text-[#15181C]">Redacted</strong> items are stripped server-side.
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            data-testid="add-insight-button"
-            onClick={() => setShowAddForm((s) => !s)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Add</span>
-          </Button>
-        </div>
-
-        {showAddForm && (
-          <form
-            onSubmit={handleAddInsight}
-            className="mb-4 space-y-2.5 rounded-2xl border border-[#DFD7CA] bg-[#FAF7F2] p-3.5"
-          >
-            <select
-              value={newDimension}
-              onChange={(e) => setNewDimension(e.target.value as BlueprintDimension)}
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-1.5 text-xs"
-            >
-              {BLUEPRINT_DIMENSIONS.map((d) => (
-                <option key={d} value={d}>
-                  {DIMENSION_LABELS[d]}
-                </option>
-              ))}
-            </select>
-            <input
-              required
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Insight title..."
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-1.5 text-xs"
-            />
-            <textarea
-              required
-              rows={2}
-              value={newSummary}
-              onChange={(e) => setNewSummary(e.target.value)}
-              placeholder="Describe what you want your Wingman to know..."
-              className="w-full rounded-xl border border-[#DFD7CA] bg-white px-3 py-1.5 text-xs"
-            />
-            <div className="flex items-center justify-between">
-              <select
-                value={newVisibility}
-                onChange={(e) => setNewVisibility(e.target.value as 'shareable' | 'private')}
-                className="rounded-xl border border-[#DFD7CA] bg-white px-2.5 py-1 text-xs"
-              >
-                <option value="shareable">Shareable with Agents</option>
-                <option value="private">Private (Coach Only)</option>
-              </select>
-              <Button type="submit" size="sm">
-                Save Insight
-              </Button>
-            </div>
           </form>
-        )}
+        </SpotlightCard>
 
-        <div className="space-y-3 overflow-y-auto pr-1 max-h-[540px]">
-          {user.blueprint.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#DFD7CA] p-6 text-center text-xs text-[#535963]">
-              Start chatting with {persona.wingmanName} to populate your 8-dimension Relationship Blueprint.
+        {/* Right: Animated Relationship Blueprint Bento Card */}
+        <aside
+          data-testid="relationship-blueprint-sidebar"
+          className="editorial-bento spotlight-card flex flex-col rounded-3xl p-5 sm:p-6 lg:col-span-5"
+        >
+          <div className="mb-4 flex items-start justify-between gap-2 border-b border-[var(--border-hairline)] pb-4">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-[var(--accent-sage)]" />
+                <span className="font-mono-label text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-sage)]">
+                  Live Privacy Controls
+                </span>
+              </div>
+              <h3 className="font-editorial mt-1 text-2xl font-normal text-[var(--ink-primary)]">
+                Relationship Blueprint
+              </h3>
+              <p className="mt-0.5 text-xs text-[var(--ink-secondary)]">
+                <strong className="text-[var(--ink-primary)]">Shareable</strong> traits enter Agent Lounge packets;{' '}
+                <strong className="text-[var(--ink-primary)]">Private</strong> &amp;{' '}
+                <strong className="text-[var(--ink-primary)]">Redacted</strong> stay stripped server-side.
+              </p>
             </div>
-          ) : (
-            user.blueprint.map((ins) => {
-              const isEditing = editingId === ins.id;
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="add-insight-button"
+              onClick={() => setShowAddForm((s) => !s)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add</span>
+            </Button>
+          </div>
+
+          {/* 8-Dimension Coverage Matrix */}
+          <div className="mb-4 flex flex-wrap gap-1.5">
+            {BLUEPRINT_DIMENSIONS.map((dim) => {
+              const filled = populatedDimensions.has(dim);
               return (
-                <div
-                  key={ins.id}
-                  data-testid={`blueprint-item-${ins.id}`}
-                  className="rounded-2xl border border-[#E4DDD2] bg-white p-3.5 shadow-2xs"
+                <span
+                  key={dim}
+                  className={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition ${
+                    filled
+                      ? 'border-[var(--accent-sage)]/35 bg-[var(--accent-sage-soft)] text-[var(--accent-sage)]'
+                      : 'border-[var(--border-hairline)] bg-[var(--surface-subtle)]/60 text-[var(--ink-muted)]'
+                  }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Badge tone="neutral">{DIMENSION_LABELS[ins.dimension]}</Badge>
-                    <Badge
-                      tone={
-                        ins.visibility === 'shareable'
-                          ? 'sage'
+                  {filled ? '● ' : '○ '}
+                  {DIMENSION_LABELS[dim]}
+                </span>
+              );
+            })}
+          </div>
+
+          {showAddForm && (
+            <form
+              onSubmit={handleAddInsight}
+              className="mb-4 space-y-2.5 rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-elevated)] p-3.5"
+            >
+              <select
+                value={newDimension}
+                onChange={(e) => setNewDimension(e.target.value as BlueprintDimension)}
+                className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-3 py-1.5 text-xs text-[var(--ink-primary)]"
+              >
+                {BLUEPRINT_DIMENSIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {DIMENSION_LABELS[d]}
+                  </option>
+                ))}
+              </select>
+              <input
+                required
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Insight title..."
+                className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-3 py-1.5 text-xs text-[var(--ink-primary)]"
+              />
+              <textarea
+                required
+                rows={2}
+                value={newSummary}
+                onChange={(e) => setNewSummary(e.target.value)}
+                placeholder="Describe what you want your Wingman to know..."
+                className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-3 py-1.5 text-xs text-[var(--ink-primary)]"
+              />
+              <div className="flex items-center justify-between">
+                <select
+                  value={newVisibility}
+                  onChange={(e) => setNewVisibility(e.target.value as 'shareable' | 'private')}
+                  className="rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-2.5 py-1 text-xs text-[var(--ink-primary)]"
+                >
+                  <option value="shareable">Shareable with Agents</option>
+                  <option value="private">Private (Coach Only)</option>
+                </select>
+                <Button type="submit" size="sm">
+                  Save Insight
+                </Button>
+              </div>
+            </form>
+          )}
+
+          <motion.div
+            variants={bentoGridVariants}
+            initial="hidden"
+            animate="visible"
+            className="kindred-scroll space-y-3 overflow-y-auto pr-1 max-h-[520px]"
+          >
+            {user.blueprint.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[var(--border-strong)] p-6 text-center text-xs text-[var(--ink-secondary)]">
+                Start chatting with {persona.wingmanName} to illuminate your 8-dimension Relationship Blueprint.
+              </div>
+            ) : (
+              user.blueprint.map((ins) => {
+                const isEditing = editingId === ins.id;
+                return (
+                  <motion.div
+                    key={ins.id}
+                    variants={bentoCardVariants}
+                    data-testid={`blueprint-item-${ins.id}`}
+                    className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-elevated)]/85 p-3.5 transition-colors hover:border-[var(--border-strong)]"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Badge tone="neutral">{DIMENSION_LABELS[ins.dimension]}</Badge>
+                      <Badge
+                        tone={
+                          ins.visibility === 'shareable'
+                            ? 'sage'
+                            : ins.visibility === 'private'
+                              ? 'ochre'
+                              : 'danger'
+                        }
+                      >
+                        {ins.visibility === 'shareable'
+                          ? 'Shareable'
                           : ins.visibility === 'private'
-                            ? 'ochre'
-                            : 'danger'
-                      }
-                    >
-                      {ins.visibility === 'shareable'
-                        ? 'Shareable'
-                        : ins.visibility === 'private'
-                          ? 'Private'
-                          : 'Redacted'}
-                    </Badge>
-                  </div>
-
-                  {isEditing ? (
-                    <div className="mt-2.5 space-y-2">
-                      <input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        className="w-full rounded-lg border border-[#DFD7CA] px-2.5 py-1 text-xs font-semibold"
-                      />
-                      <textarea
-                        rows={2}
-                        value={editSummary}
-                        onChange={(e) => setEditSummary(e.target.value)}
-                        className="w-full rounded-lg border border-[#DFD7CA] px-2.5 py-1 text-xs"
-                      />
-                      <div className="flex justify-end gap-1.5">
-                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
-                          Cancel
-                        </Button>
-                        <Button size="sm" onClick={() => saveEdit(ins)}>
-                          <Check className="h-3 w-3" />
-                          Save
-                        </Button>
-                      </div>
+                            ? 'Private'
+                            : 'Redacted'}
+                      </Badge>
                     </div>
-                  ) : (
-                    <>
-                      <h4 className="mt-2 text-sm font-semibold text-[#15181C]">
-                        {ins.visibility === 'redacted' ? '[Redacted from Agent Memory]' : ins.title}
-                      </h4>
-                      <p className="mt-1 text-xs leading-relaxed text-[#535963]">
-                        {ins.visibility === 'redacted'
-                          ? 'This insight was redacted and removed from all future Agent Lounge negotiations.'
-                          : ins.summary}
-                      </p>
-                    </>
-                  )}
 
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-[#F2ECE3] pt-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => startEdit(ins)}
-                      className="h-7 px-2 text-[11px]"
-                    >
-                      <Pencil className="h-3 w-3" />
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        onMutateBlueprint({
-                          action: 'toggle_visibility',
-                          insightId: ins.id,
-                          visibility: ins.visibility === 'shareable' ? 'private' : 'shareable',
-                        })
-                      }
-                      className="h-7 px-2 text-[11px]"
-                    >
-                      {ins.visibility === 'shareable' ? (
-                        <>
-                          <EyeOff className="h-3 w-3" />
-                          Make Private
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-3 w-3" />
-                          Make Shareable
-                        </>
-                      )}
-                    </Button>
-                    {ins.visibility !== 'redacted' && (
+                    {isEditing ? (
+                      <div className="mt-2.5 space-y-2">
+                        <input
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-2.5 py-1.5 text-xs font-semibold text-[var(--ink-primary)]"
+                        />
+                        <textarea
+                          rows={2}
+                          value={editSummary}
+                          onChange={(e) => setEditSummary(e.target.value)}
+                          className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-input)] px-2.5 py-1.5 text-xs text-[var(--ink-primary)]"
+                        />
+                        <div className="flex justify-end gap-1.5">
+                          <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                            Cancel
+                          </Button>
+                          <Button size="sm" onClick={() => saveEdit(ins)}>
+                            <Check className="h-3 w-3" />
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h4 className="mt-2 text-sm font-semibold text-[var(--ink-primary)]">
+                          {ins.visibility === 'redacted' ? '[Redacted from Agent Memory]' : ins.title}
+                        </h4>
+                        <p className="mt-1 text-xs leading-relaxed text-[var(--ink-secondary)]">
+                          {ins.visibility === 'redacted'
+                            ? 'This insight was redacted and removed from all future Agent Lounge negotiations.'
+                            : ins.summary}
+                        </p>
+                      </>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-[var(--border-hairline)] pt-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => startEdit(ins)}
+                        className="h-7 px-2 text-[11px]"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        Edit
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() =>
                           onMutateBlueprint({
-                            action: 'redact',
+                            action: 'toggle_visibility',
                             insightId: ins.id,
+                            visibility: ins.visibility === 'shareable' ? 'private' : 'shareable',
                           })
                         }
-                        className="h-7 px-2 text-[11px] text-[#9B3B2E]"
+                        className="h-7 px-2 text-[11px]"
                       >
-                        <Trash2 className="h-3 w-3" />
-                        Redact
+                        {ins.visibility === 'shareable' ? (
+                          <>
+                            <EyeOff className="h-3 w-3" />
+                            Make Private
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-3 w-3" />
+                            Make Shareable
+                          </>
+                        )}
                       </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </aside>
-    </div>
+                      {ins.visibility !== 'redacted' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() =>
+                            onMutateBlueprint({
+                              action: 'redact',
+                              insightId: ins.id,
+                            })
+                          }
+                          className="h-7 px-2 text-[11px] text-[var(--accent-danger)]"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Redact
+                        </Button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </motion.div>
+        </aside>
+      </div>
+    </section>
   );
 }

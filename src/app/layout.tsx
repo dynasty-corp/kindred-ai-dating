@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
+import { Instrument_Serif, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
+import { KindredThemeProvider } from '@/lib/theme';
 import './globals.css';
 
-const fraunces = Fraunces({
+const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
   variable: '--font-serif',
   display: 'swap',
 });
@@ -39,10 +42,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${jakarta.variable} ${jetbrains.variable}`}
+      data-theme="nocturne"
+      suppressHydrationWarning
+      className={`${instrumentSerif.variable} ${jakarta.variable} ${jetbrains.variable}`}
     >
-      <body className="min-h-screen bg-[#FAF7F2] text-[#15181C] selection:bg-[#D96B4F]/20 selection:text-[#15181C]">
-        {children}
+      <body className="min-h-screen bg-[var(--surface-canvas)] text-[var(--ink-primary)] selection:bg-[var(--accent-coral)]/25 selection:text-[var(--ink-primary)]">
+        <KindredThemeProvider>{children}</KindredThemeProvider>
       </body>
     </html>
   );

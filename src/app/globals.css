@@ -1,18 +1,62 @@
 @import "tailwindcss";
 
-:root {
-  --bg-alabaster: #faf7f2;
-  --bg-linen: #ffffff;
-  --bg-sand: #f2ece3;
-  --ink-primary: #15181c;
-  --ink-secondary: #535963;
-  --ink-muted: #7a808a;
-  --accent-terracotta: #d96b4f;
-  --accent-terracotta-deep: #b85137;
-  --accent-sage: #6e8f78;
-  --accent-sage-deep: #4e6e58;
-  --accent-ochre: #c89b54;
-  --border-warm: #e4ddd2;
+:root,
+[data-theme="nocturne"] {
+  color-scheme: dark;
+  --surface-canvas: #0a090e;
+  --surface-elevated: #14121c;
+  --surface-subtle: #1c1927;
+  --surface-glass: rgba(20, 18, 28, 0.74);
+  --surface-glass-strong: rgba(20, 18, 28, 0.88);
+  --surface-input: rgba(12, 10, 17, 0.82);
+
+  --ink-primary: #f7f4ef;
+  --ink-secondary: #b5aebe;
+  --ink-muted: #7c7489;
+
+  --accent-coral: #ff6b5b;
+  --accent-coral-deep: #e25141;
+  --accent-coral-soft: rgba(255, 107, 91, 0.14);
+  --accent-amber: #f5a623;
+  --accent-amber-soft: rgba(245, 166, 35, 0.14);
+  --accent-sage: #34d399;
+  --accent-sage-soft: rgba(52, 211, 153, 0.14);
+  --accent-danger: #f87171;
+  --accent-danger-soft: rgba(248, 113, 113, 0.14);
+
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --spotlight-glow: rgba(255, 107, 91, 0.12);
+  --shadow-bento: 0 22px 54px -26px rgba(0, 0, 0, 0.85);
+}
+
+[data-theme="alabaster"] {
+  color-scheme: light;
+  --surface-canvas: #faf7f2;
+  --surface-elevated: #ffffff;
+  --surface-subtle: #f2ece3;
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --surface-glass-strong: rgba(255, 255, 255, 0.92);
+  --surface-input: rgba(255, 255, 255, 0.95);
+
+  --ink-primary: #18161d;
+  --ink-secondary: #54505e;
+  --ink-muted: #7c7788;
+
+  --accent-coral: #d96b4f;
+  --accent-coral-deep: #b85137;
+  --accent-coral-soft: rgba(217, 107, 79, 0.12);
+  --accent-amber: #c89b54;
+  --accent-amber-soft: rgba(200, 155, 84, 0.14);
+  --accent-sage: #4e7a61;
+  --accent-sage-soft: rgba(78, 122, 97, 0.13);
+  --accent-danger: #9b3b2e;
+  --accent-danger-soft: rgba(155, 59, 46, 0.11);
+
+  --border-hairline: rgba(24, 22, 29, 0.09);
+  --border-strong: rgba(24, 22, 29, 0.18);
+  --spotlight-glow: rgba(217, 107, 79, 0.1);
+  --shadow-bento: 0 18px 46px -24px rgba(24, 22, 29, 0.16);
 }
 
 * {
@@ -23,10 +67,11 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-alabaster);
+  background-color: var(--surface-canvas);
   color: var(--ink-primary);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.32s ease, color 0.32s ease;
 }
 
 .font-editorial {
@@ -38,14 +83,59 @@ body {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-.editorial-card {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-warm);
-  box-shadow: 0 10px 30px -16px rgba(21, 24, 28, 0.12);
+.editorial-card,
+.editorial-bento {
+  background: var(--surface-glass);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-bento);
 }
 
-.editorial-surface-sand {
-  background-color: var(--bg-sand);
-  border: 1px solid var(--border-warm);
+.editorial-surface-subtle {
+  background-color: var(--surface-subtle);
+  border: 1px solid var(--border-hairline);
+}
+
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(
+    420px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    var(--spotlight-glow),
+    transparent 65%
+  );
+  z-index: 0;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+.spotlight-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.kindred-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.kindred-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kindred-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
 }
