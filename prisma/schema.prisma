@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id                  String   @id
+  email               String?  @unique
+  displayName         String
+  age                 Int
+  pronouns            String
+  city                String
+  occupation          String
+  bioTagline          String
+  interests           Json
+  isSeededDemo        Boolean  @default(false)
+  avatarConfig        Json
+  onboardingMessages  Json
+  blueprint           Json
+  onboardingProgress  Int      @default(0)
+  onboardingCompleted Boolean  @default(false)
+  activeMatchIds      Json
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  agentPersona        AgentPersona?
+}
+
+model AgentPersona {
+  id                        String   @id
+  userId                    String   @unique
+  wingmanName               String
+  coachingTone              String
+  systemGuardrailVersion    String
+  shareableSummaries        Json
+  dealbreakerSignals        Json
+  compatibilityVector       Json
+  complementaryStrengths    Json
+  privateContextCount       Int      @default(0)
+  lastSyncedFromBlueprintAt DateTime @default(now())
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AgentConversation {
+  id                    String    @id
+  initiatorUserId       String
+  candidateUserId       String
+  initiatorAgentId      String
+  candidateAgentId      String
+  isAiSimulationLabeled Boolean   @default(true)
+  privacyAuditPassed    Boolean   @default(true)
+  executionMode         String
+  status                String
+  turns                 Json
+  startedAt             DateTime  @default(now())
+  completedAt           DateTime?
+}
+
+model MatchDossier {
+  id                      String   @id
+  conversationId          String
+  userAId                 String
+  userBId                 String
+  overallScore            Int
+  meetsGamingThreshold    Boolean
+  subScores               Json
+  headline                String
+  whyYoudClick            Json
+  potentialFrictionPoints Json
+  sharedInterests         Json
+  complementaryPairingNote String
+  userADecision           String   @default("pending")
+  userBDecision           String   @default("pending")
+  status                  String   @default("dossier_ready")
+  humanChatMessages       Json
+  sandboxConsent          Json
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model CoopGameSession {
+  id                    String   @id
+  matchId               String
+  mode                  String
+  status                String
+  tailoredInterestsUsed Json
+  executionMode         String
+  blindTripState        Json?
+  mysteryEscapeState    Json?
+  wavelengthState       Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model FutureSimulation {
+  id                    String   @id
+  matchId               String   @unique
+  verifiedDualConsentAt DateTime
+  executionMode         String
+  dateNightBlueprints   Json?
+  worldAdventure        Json?
+  futureFamily          Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

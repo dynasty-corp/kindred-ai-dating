@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  --bg-alabaster: #faf7f2;
+  --bg-linen: #ffffff;
+  --bg-sand: #f2ece3;
+  --ink-primary: #15181c;
+  --ink-secondary: #535963;
+  --ink-muted: #7a808a;
+  --accent-terracotta: #d96b4f;
+  --accent-terracotta-deep: #b85137;
+  --accent-sage: #6e8f78;
+  --accent-sage-deep: #4e6e58;
+  --accent-ochre: #c89b54;
+  --border-warm: #e4ddd2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-alabaster);
+  color: var(--ink-primary);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-editorial {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+}
+
+.font-mono-label {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+.editorial-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-warm);
+  box-shadow: 0 10px 30px -16px rgba(21, 24, 28, 0.12);
+}
+
+.editorial-surface-sand {
+  background-color: var(--bg-sand);
+  border: 1px solid var(--border-warm);
+}
