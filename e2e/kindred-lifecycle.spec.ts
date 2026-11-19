@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
-  test('completes Wingman onboarding, Agent Lounge interview, Cohort accept, Co-Op game + Human Chat, and Dual-Consent Future Studio', async ({
+test.describe('KindredAI Flagship Landing & 4-Stage Studio Journey (Chromium)', () => {
+  test('converts from Landing Hero 10-second entry into Wingman onboarding, Agent Lounge, Co-Op game + Human Chat, and Future Studio', async ({
     page,
   }) => {
     const pageErrors: string[] = [];
@@ -14,24 +14,30 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'KindredAI' })).toBeVisible();
 
-    // Verify bright Editorial Alabaster default theme -> Warm Nocturne toggle -> back to bright Alabaster
+    // Verify flagship Landing Front Door renders above the fold in Warm Nocturne default
+    await expect(
+      page.getByRole('heading', { name: /Stop swiping on strangers/i }),
+    ).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'nocturne');
+
+    // Toggle Warm Nocturne -> Editorial Alabaster -> Warm Nocturne
+    await page.getByTestId('theme-toggle-button').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'alabaster');
     await page.getByTestId('theme-toggle-button').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'nocturne');
-    await page.getByTestId('theme-toggle-button').click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'alabaster');
 
-    // Stage 1: Send a reflection to Wingman and verify Blueprint sidebar updates
-    await page.getByTestId('wingman-input').fill(
-      'I love unhurried Sunday farmer markets, calm same-night repair, and dry playful banter.',
-    );
-    await page.getByTestId('wingman-send-button').click();
+    // Zero-Friction 10-Second Hero Entry straight into live Wingman onboarding
+    await page
+      .getByTestId('hero-instant-input')
+      .fill('I love unhurried Sunday farmer markets, calm same-night repair, and dry playful banter.');
+    await page.getByTestId('hero-instant-submit').click();
+
     await expect(page.getByTestId('wingman-messages')).toContainText('100%');
 
-    // Stage 2: Enter Agent Lounge, run interview with Marcus Hale (seed-1), and accept
+    // Stage 2: Enter Agent Lounge (Today's Curated Cohort), run interview with Marcus Hale (seed-1), and accept
     await page.getByTestId('stage-tab-discovery').click();
+    await expect(page.getByText(/Curated Cohort/i)).toBeVisible();
     await page.getByTestId('candidate-card-seed-1').click();
     await page.getByTestId('run-agent-interview-button').click();
 
@@ -70,7 +76,7 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('renders cleanly across 390px mobile and 1440px desktop viewports without horizontal overflow', async ({
+  test('renders Landing Page and all Studio stages cleanly across 1440px desktop and 390px mobile without horizontal overflow', async ({
     page,
   }) => {
     await page.request.post('/api/profiles', {
@@ -83,7 +89,17 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
     ]) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto('/');
-      await expect(page.getByRole('heading', { name: 'KindredAI' })).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: /Stop swiping on strangers/i }),
+      ).toBeVisible();
+
+      const landingOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,
+      );
+      expect(landingOverflow, `Landing overflow on ${vp.width}px`).toBe(false);
+
+      // Enter Instant Demo Tour (No Sign-Up)
+      await page.getByTestId('instant-demo-tour-button').click();
 
       for (const tab of ['onboarding', 'discovery', 'games', 'future'] as const) {
         await page.getByTestId(`${vp.prefix}-${tab}`).click();
@@ -91,9 +107,7 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,
         );
-        expect(overflow, `Unexpected horizontal overflow on ${vp.width}px at stage ${tab}`).toBe(
-          false,
-        );
+        expect(overflow, `Studio overflow on ${vp.width}px at stage ${tab}`).toBe(false);
       }
     }
   });

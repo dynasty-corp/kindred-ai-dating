@@ -116,44 +116,51 @@ export function Stage1Onboarding({
       {/* Bright Sunlit Aura Mesh Backdrop */}
       <AuraShaderDynamic depthProgress={user.onboardingProgress} theme={theme} />
 
-      {/* Warm, Uncluttered Welcome Header */}
-      <div className="relative z-10 mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div className="max-w-xl">
-          <p className="text-xs font-medium text-[var(--accent-coral)]">
-            Your Personal Wingman · {persona.wingmanName}
-          </p>
-          <h2 className="font-editorial mt-1.5 text-3xl leading-[1.08] font-normal text-[var(--ink-primary)] sm:text-4xl">
-            Tell <em className="italic text-[var(--accent-coral)]">{persona.wingmanName}</em> what truly matters to you.
-          </h2>
-          <p className="mt-2 text-sm text-[var(--ink-secondary)]">
-            No bios or swiping. Have a relaxed conversation—you control what stays private and what your wingman can share.
-          </p>
+      {/* Slim Motivating Blueprint Completeness Meter & Effortless Controls */}
+      <div className="relative z-10 mb-6 flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-[var(--border-hairline)] bg-[var(--surface-glass)] px-5 py-4 backdrop-blur-xl">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono-label text-[11px] font-semibold uppercase tracking-wider text-[var(--accent-coral)]">
+              Wingman · {persona.wingmanName}
+            </span>
+            <span className="font-mono-label text-[11px] font-semibold text-[var(--accent-sage)]">
+              {user.onboardingProgress}% Blueprint Complete
+            </span>
+          </div>
+          <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-[var(--surface-subtle)]">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-[var(--accent-coral)] via-[var(--accent-amber)] to-[var(--accent-sage)]"
+              initial={{ width: 0 }}
+              animate={{ width: `${user.onboardingProgress}%` }}
+              transition={KINDRED_SPRING}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--surface-glass)] px-3.5 py-2 backdrop-blur-md">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-[var(--ink-secondary)]">Profile Depth</span>
-              <span className="font-mono-label font-semibold text-[var(--accent-sage)]">
-                {user.onboardingProgress}%
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 w-32 overflow-hidden rounded-full bg-[var(--surface-subtle)]">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-[var(--accent-coral)] to-[var(--accent-sage)]"
-                initial={{ width: 0 }}
-                animate={{ width: `${user.onboardingProgress}%` }}
-                transition={KINDRED_SPRING}
-              />
-            </div>
-          </div>
-
-          {user.onboardingProgress >= 60 && (
-            <Button variant="sage" size="md" onClick={onGoToDiscovery} className="rounded-full">
-              <span>See Introductions</span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() =>
+              onSendMessage(
+                'Ask me something else — maybe about my weekend rhythm, humor, or how I like to travel.',
+                false,
+              )
+            }
+            className="rounded-full"
+          >
+            Skip / Ask Me Something Else
+          </Button>
+          <Button
+            variant="sage"
+            size="sm"
+            onClick={onGoToDiscovery}
+            className="rounded-full px-4"
+          >
+            <span>Ready to Match Now</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
@@ -374,7 +381,9 @@ export function Stage1Onboarding({
                             className="cursor-pointer"
                           >
                             <Badge tone={ins.visibility === 'shareable' ? 'sage' : 'ochre'}>
-                              {ins.visibility === 'shareable' ? 'Shareable' : 'Private'}
+                              {ins.visibility === 'shareable'
+                                ? 'Shareable Signal'
+                                : 'Private to My AI'}
                             </Badge>
                           </button>
                         ) : (

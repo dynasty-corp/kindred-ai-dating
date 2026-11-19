@@ -5,6 +5,7 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Stage2Discovery } from '@/components/discovery/Stage2Discovery';
 import { Stage4FutureStudio } from '@/components/future/Stage4FutureStudio';
 import { Stage3GamesAndChat } from '@/components/games/Stage3GamesAndChat';
+import { LandingFrontDoor } from '@/components/landing/LandingFrontDoor';
 import { Stage1Onboarding } from '@/components/onboarding/Stage1Onboarding';
 import {
   FocusedCohortModal,
@@ -27,6 +28,7 @@ import type {
 } from '@/lib/types/schemas';
 
 export default function KindredStudioPage() {
+  const [viewMode, setViewMode] = useState<'landing' | 'studio'>('landing');
   const [stage, setStage] = useState<StageTab>('onboarding');
   const [aiMode, setAiMode] = useState<string>('deterministic_simulation');
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -494,6 +496,31 @@ export default function KindredStudioPage() {
     }
   };
 
+  const handleStartFromHero = async (thought: string) => {
+    setViewMode('studio');
+    setStage('onboarding');
+    await handleSendWingmanMessage(thought, false);
+  };
+
+  if (viewMode === 'landing') {
+    return (
+      <MotionConfig reducedMotion="user">
+        <LandingFrontDoor
+          onStartWithThought={handleStartFromHero}
+          onStartInstantDemo={() => {
+            setStage('discovery');
+            setViewMode('studio');
+          }}
+          onEnterOnboarding={() => {
+            setStage('onboarding');
+            setViewMode('studio');
+          }}
+          busy={busy}
+        />
+      </MotionConfig>
+    );
+  }
+
   if (!currentUser || !activePersona) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[var(--surface-canvas)] text-sm text-[var(--ink-secondary)]">
@@ -524,6 +551,7 @@ export default function KindredStudioPage() {
             setErrorMsg(null);
             setStage(next);
           }}
+          onReturnToLanding={() => setViewMode('landing')}
           currentUser={currentUserSummary}
           users={users}
           activeCohortCount={activeCohortCount}

@@ -41,6 +41,7 @@ const JOURNEY_STEPS: Array<{ id: StageTab; step: string; label: string }> = [
 export function HeaderBar({
   stage,
   onSelectStage,
+  onReturnToLanding,
   currentUser,
   users,
   activeCohortCount,
@@ -53,6 +54,7 @@ export function HeaderBar({
 }: {
   stage: StageTab;
   onSelectStage: (next: StageTab) => void;
+  onReturnToLanding?: () => void;
   currentUser: WorkspaceUserSummary;
   users: WorkspaceUserSummary[];
   activeCohortCount: number;
@@ -82,14 +84,19 @@ export function HeaderBar({
     <header className="sticky top-0 z-30 border-b border-[var(--border-hairline)] bg-[var(--surface-glass-strong)] backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         {/* Clean Brand Wordmark */}
-        <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={onReturnToLanding}
+          className="flex items-center gap-2.5 text-left transition hover:opacity-85 cursor-pointer"
+          title="Back to KindredAI Intro"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--accent-coral-soft)] text-[var(--accent-coral)]">
             <Sparkles className="h-4 w-4" />
           </div>
           <h1 className="font-editorial text-2xl font-normal tracking-tight text-[var(--ink-primary)]">
             KindredAI
           </h1>
-        </div>
+        </button>
 
         {/* Unified Single-Layer 4-Step Journey Navigation (Desktop) */}
         <nav

@@ -91,8 +91,99 @@ export function Stage2Discovery({
     }, 450);
   };
 
+  const curatedCohort = candidates.slice(0, 3);
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+    <div className="space-y-6">
+      {/* Coffee Meets Bagel Pattern: Today's Curated Cohort (3 High-Alignment Matches) */}
+      <SpotlightCard className="p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
+          <div>
+            <span className="font-mono-label text-[10px] uppercase tracking-wider text-[var(--accent-coral)]">
+              Anti-Fatigue Focused Cohort
+            </span>
+            <h2 className="font-editorial text-2xl font-normal text-[var(--ink-primary)]">
+              Today&apos;s Curated Cohort (3 High-Alignment Matches)
+            </h2>
+          </div>
+          <Badge tone="sage">Depth Over Swiping</Badge>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {curatedCohort.map((candidate) => {
+            const dossier = matches.find(
+              (m) =>
+                (m.userAId === currentUserId && m.userBId === candidate.id) ||
+                (m.userBId === currentUserId && m.userAId === candidate.id),
+            );
+            const score = dossier?.overallScore ?? 86;
+            const isSelected = activeCandidate?.id === candidate.id;
+            const circumference = 2 * Math.PI * 16;
+            const strokeOffset = circumference - (score / 100) * circumference;
+
+            return (
+              <motion.button
+                key={`cohort-${candidate.id}`}
+                type="button"
+                whileTap={{ scale: 0.98 }}
+                transition={KINDRED_SPRING}
+                onClick={() => onSelectCandidate(candidate.id)}
+                className={`editorial-inner-card flex items-center justify-between gap-3 p-3 text-left transition cursor-pointer ${
+                  isSelected
+                    ? 'border-[var(--accent-coral)] bg-[var(--accent-coral-soft)]/60'
+                    : 'bg-[var(--surface-elevated)]/70 hover:border-[var(--border-strong)]'
+                }`}
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <AvatarPortrait
+                    config={candidate.avatarConfig}
+                    name={candidate.displayName}
+                    size={38}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold text-[var(--ink-primary)]">
+                      {candidate.displayName}, {candidate.age}
+                    </p>
+                    <p className="truncate text-[11px] text-[var(--ink-secondary)]">
+                      {candidate.occupation}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mini Compatibility Progress Ring */}
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                  <svg width="40" height="40" className="-rotate-90" aria-hidden="true">
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r="16"
+                      fill="none"
+                      stroke="var(--border-hairline)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r="16"
+                      fill="none"
+                      stroke={dossier ? 'var(--accent-sage)' : 'var(--accent-coral)'}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeOffset}
+                    />
+                  </svg>
+                  <span className="font-mono-label absolute text-[10px] font-semibold text-[var(--ink-primary)]">
+                    {dossier ? `${dossier.overallScore}%` : 'AI'}
+                  </span>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </SpotlightCard>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* Left: Calm, Scannable Candidate List */}
       <aside className="lg:col-span-4">
         <SpotlightCard className="p-4 sm:p-5">
@@ -451,6 +542,7 @@ export function Stage2Discovery({
           </SpotlightCard>
         )}
       </section>
+      </div>
     </div>
   );
 }
