@@ -53,45 +53,43 @@ const FRAGMENT_SHADER = `
   void main() {
     vec2 aspect = vec2(u_resolution.x / max(1.0, u_resolution.y), 1.0);
     vec2 p = (vUv - 0.5) * aspect;
-    vec2 mouseOffset = (u_mouse - 0.5) * 0.45 * aspect;
+    vec2 mouseOffset = (u_mouse - 0.5) * 0.42 * aspect;
 
-    float t = u_time * mix(0.085, 0.165, u_depth);
-    float n1 = snoise(p * 1.55 + vec2(t * 0.6, -t * 0.4) + mouseOffset * 0.45);
-    float n2 = snoise(p * 2.4 - vec2(t * 0.35, t * 0.55) + vec2(n1 * 0.65));
+    float t = u_time * mix(0.07, 0.13, u_depth);
+    float n1 = snoise(p * 1.45 + vec2(t * 0.5, -t * 0.35) + mouseOffset * 0.35);
+    float n2 = snoise(p * 2.1 - vec2(t * 0.3, t * 0.45) + vec2(n1 * 0.55));
     float field = clamp(0.5 + 0.5 * (n1 * 0.62 + n2 * 0.38), 0.0, 1.0);
 
     float pointerDist = length(p - mouseOffset);
-    float pointerBloom = exp(-pointerDist * 2.1) * mix(0.28, 0.46, u_depth);
+    float pointerBloom = exp(-pointerDist * 2.0) * mix(0.22, 0.36, u_depth);
 
-    if (u_isLight < 0.5) {
+    if (u_isLight > 0.5) {
+      // Bright Sunlit Alabaster: porcelain cream -> soft peach blush & warm morning gold
+      vec3 porcelain = vec3(1.0, 0.992, 0.976);
+      vec3 warmLinen = vec3(0.992, 0.960, 0.922);
+      vec3 peachBlush = vec3(0.995, 0.785, 0.715);
+      vec3 morningGold = vec3(0.992, 0.885, 0.695);
+      vec3 softSage = vec3(0.825, 0.945, 0.895);
+
+      vec3 base = mix(porcelain, warmLinen, smoothstep(0.18, 0.86, field));
+      vec3 tint = mix(peachBlush, morningGold, smoothstep(0.22, 0.85, n2 * 0.5 + 0.5));
+      float washMask = smoothstep(0.42, 0.94, field) * mix(0.26, 0.42, u_depth);
+      vec3 color = mix(base, tint, washMask);
+      color = mix(color, softSage, smoothstep(0.68, 0.98, n1 * 0.5 + 0.5) * 0.16);
+      color = mix(color, peachBlush, pointerBloom * 0.22);
+      gl_FragColor = vec4(color, 1.0);
+    } else {
       // Warm Nocturne: velvet obsidian -> plum charcoal -> coral/amber ember
-      vec3 obsidian = vec3(0.039, 0.035, 0.055);
-      vec3 plum = vec3(0.118, 0.088, 0.155);
-      vec3 coral = vec3(0.95, 0.38, 0.32);
-      vec3 amber = vec3(0.96, 0.65, 0.16);
-      vec3 sage = vec3(0.20, 0.72, 0.55);
+      vec3 obsidian = vec3(0.058, 0.051, 0.086);
+      vec3 plum = vec3(0.145, 0.112, 0.195);
+      vec3 coral = vec3(0.96, 0.44, 0.36);
+      vec3 amber = vec3(0.96, 0.68, 0.24);
 
       vec3 base = mix(obsidian, plum, smoothstep(0.15, 0.85, field));
       vec3 ember = mix(coral, amber, smoothstep(0.25, 0.9, n2 * 0.5 + 0.5));
-      float glowMask = smoothstep(0.45, 0.92, field) * mix(0.22, 0.44, u_depth);
+      float glowMask = smoothstep(0.45, 0.92, field) * mix(0.22, 0.42, u_depth);
       vec3 color = mix(base, ember, glowMask);
-      color += mix(coral, sage, 0.25) * pointerBloom * 0.32;
-
-      float vignette = smoothstep(1.25, 0.2, length(p));
-      color = mix(obsidian, color, vignette * 0.92 + 0.08);
-      gl_FragColor = vec4(color, 1.0);
-    } else {
-      // Editorial Alabaster: warm cream linen -> sunlit coral & sage wash
-      vec3 alabaster = vec3(0.980, 0.969, 0.949);
-      vec3 sand = vec3(0.945, 0.915, 0.865);
-      vec3 coralWash = vec3(0.92, 0.56, 0.46);
-      vec3 amberWash = vec3(0.89, 0.74, 0.50);
-
-      vec3 base = mix(alabaster, sand, smoothstep(0.2, 0.88, field));
-      vec3 tint = mix(coralWash, amberWash, smoothstep(0.2, 0.85, n2 * 0.5 + 0.5));
-      float washMask = smoothstep(0.48, 0.95, field) * mix(0.14, 0.26, u_depth);
-      vec3 color = mix(base, tint, washMask);
-      color = mix(color, coralWash, pointerBloom * 0.14);
+      color += coral * pointerBloom * 0.26;
       gl_FragColor = vec4(color, 1.0);
     }
   }
@@ -225,9 +223,9 @@ export function AuraShaderCanvas({
   }, [reducedMotion]);
 
   const posterGradient =
-    theme === 'nocturne'
-      ? 'radial-gradient(circle at 22% 24%, rgba(255, 107, 91, 0.22), transparent 52%), radial-gradient(circle at 78% 68%, rgba(245, 166, 35, 0.16), transparent 56%), #0A090E'
-      : 'radial-gradient(circle at 22% 24%, rgba(217, 107, 79, 0.16), transparent 52%), radial-gradient(circle at 78% 68%, rgba(200, 155, 84, 0.16), transparent 56%), #FAF7F2';
+    theme === 'alabaster'
+      ? 'radial-gradient(circle at 18% 20%, rgba(255, 198, 178, 0.45), transparent 52%), radial-gradient(circle at 82% 72%, rgba(253, 224, 171, 0.42), transparent 56%), #FFFDF9'
+      : 'radial-gradient(circle at 22% 24%, rgba(255, 117, 99, 0.22), transparent 52%), radial-gradient(circle at 78% 68%, rgba(245, 177, 66, 0.16), transparent 56%), #0F0D16';
 
   return (
     <div

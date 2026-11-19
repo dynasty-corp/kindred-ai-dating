@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { Bot, Gamepad2, HeartHandshake, Sparkles } from 'lucide-react';
 import { Stage2Discovery } from '@/components/discovery/Stage2Discovery';
 import { Stage4FutureStudio } from '@/components/future/Stage4FutureStudio';
 import { Stage3GamesAndChat } from '@/components/games/Stage3GamesAndChat';
@@ -11,9 +10,10 @@ import {
   FocusedCohortModal,
   HeaderBar,
   NewProfileModal,
+  type StageTab,
   type WorkspaceUserSummary,
 } from '@/components/shell/HeaderAndModals';
-import { KINDRED_SPRING, stageTransitionVariants } from '@/lib/motion';
+import { stageTransitionVariants } from '@/lib/motion';
 import type {
   AgentConversation,
   AgentPersona,
@@ -25,8 +25,6 @@ import type {
   SanitizedCandidate,
   UserProfile,
 } from '@/lib/types/schemas';
-
-type StageTab = 'onboarding' | 'discovery' | 'games' | 'future';
 
 export default function KindredStudioPage() {
   const [stage, setStage] = useState<StageTab>('onboarding');
@@ -517,37 +515,15 @@ export default function KindredStudioPage() {
     avatarConfig: currentUser.avatarConfig,
   };
 
-  const stageTabs: Array<{ id: StageTab; label: string; shortLabel: string; icon: React.ReactNode }> = [
-    {
-      id: 'onboarding',
-      label: '1. My AI & Blueprint',
-      shortLabel: '1. My AI',
-      icon: <HeartHandshake className="h-4 w-4" />,
-    },
-    {
-      id: 'discovery',
-      label: '2. Agent Lounge',
-      shortLabel: '2. Lounge',
-      icon: <Bot className="h-4 w-4" />,
-    },
-    {
-      id: 'games',
-      label: '3. Co-Op Play & Chat',
-      shortLabel: '3. Co-Op',
-      icon: <Gamepad2 className="h-4 w-4" />,
-    },
-    {
-      id: 'future',
-      label: '4. What If? Studio',
-      shortLabel: '4. What If?',
-      icon: <Sparkles className="h-4 w-4" />,
-    },
-  ];
-
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative min-h-screen bg-[var(--surface-canvas)] text-[var(--ink-primary)]">
         <HeaderBar
+          stage={stage}
+          onSelectStage={(next) => {
+            setErrorMsg(null);
+            setStage(next);
+          }}
           currentUser={currentUserSummary}
           users={users}
           activeCohortCount={activeCohortCount}
@@ -562,47 +538,7 @@ export default function KindredStudioPage() {
           onResetDemo={handleResetDemo}
         />
 
-        <main className="mx-auto max-w-7xl px-3.5 py-6 sm:px-6 lg:py-8">
-          {/* Anti-Fatigue Floating Glassmorphic 4-Stage Dock */}
-          <div className="mb-7 flex justify-center">
-            <nav
-              aria-label="KindredAI 4-stage lifecycle"
-              className="editorial-bento inline-grid w-full max-w-3xl grid-cols-2 gap-1.5 rounded-2xl p-1.5 sm:grid-cols-4 sm:rounded-full"
-            >
-              {stageTabs.map((t) => {
-                const active = stage === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    data-testid={`stage-tab-${t.id}`}
-                    onClick={() => {
-                      setErrorMsg(null);
-                      setStage(t.id);
-                    }}
-                    className={`relative flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors cursor-pointer sm:rounded-full ${
-                      active
-                        ? 'text-[var(--ink-primary)]'
-                        : 'text-[var(--ink-secondary)] hover:text-[var(--ink-primary)]'
-                    }`}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="kindred-stage-pill"
-                        transition={KINDRED_SPRING}
-                        className="absolute inset-0 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-elevated)] shadow-sm sm:rounded-full"
-                      />
-                    )}
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      <span className={active ? 'text-[var(--accent-coral)]' : ''}>{t.icon}</span>
-                      <span className="hidden md:inline">{t.label}</span>
-                      <span className="md:hidden">{t.shortLabel}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
 
           <AnimatePresence mode="wait">
             {stage === 'onboarding' && (

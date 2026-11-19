@@ -16,12 +16,12 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'KindredAI' })).toBeVisible();
 
-    // Verify Warm Nocturne -> Editorial Alabaster theme switcher works cleanly
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'nocturne');
-    await page.getByTestId('theme-toggle-button').click();
+    // Verify bright Editorial Alabaster default theme -> Warm Nocturne toggle -> back to bright Alabaster
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'alabaster');
     await page.getByTestId('theme-toggle-button').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'nocturne');
+    await page.getByTestId('theme-toggle-button').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'alabaster');
 
     // Stage 1: Send a reflection to Wingman and verify Blueprint sidebar updates
     await page.getByTestId('wingman-input').fill(
@@ -78,15 +78,15 @@ test.describe('KindredAI End-to-End 4-Stage Studio Journey (Chromium)', () => {
     });
 
     for (const vp of [
-      { width: 1440, height: 900 },
-      { width: 390, height: 844 },
+      { width: 1440, height: 900, prefix: 'stage-tab' },
+      { width: 390, height: 844, prefix: 'mobile-stage-tab' },
     ]) {
-      await page.setViewportSize(vp);
+      await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto('/');
       await expect(page.getByRole('heading', { name: 'KindredAI' })).toBeVisible();
 
       for (const tab of ['onboarding', 'discovery', 'games', 'future'] as const) {
-        await page.getByTestId(`stage-tab-${tab}`).click();
+        await page.getByTestId(`${vp.prefix}-${tab}`).click();
         await page.waitForTimeout(150);
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,

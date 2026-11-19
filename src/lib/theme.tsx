@@ -2,18 +2,18 @@
 
 import { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from 'react';
 
-export type KindredTheme = 'nocturne' | 'alabaster';
+export type KindredTheme = 'alabaster' | 'nocturne';
 
-const STORAGE_KEY = 'kindred_theme';
+const STORAGE_KEY = 'kindred_theme_v2';
 const THEME_EVENT = 'kindred-theme-change';
 
 function readStoredTheme(): KindredTheme {
-  if (typeof window === 'undefined') return 'nocturne';
+  if (typeof window === 'undefined') return 'alabaster';
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw === 'alabaster' ? 'alabaster' : 'nocturne';
+    return raw === 'nocturne' ? 'nocturne' : 'alabaster';
   } catch {
-    return 'nocturne';
+    return 'alabaster';
   }
 }
 
@@ -35,7 +35,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'nocturne',
+  theme: 'alabaster',
   setTheme: () => {},
   toggleTheme: () => {},
 });
@@ -44,7 +44,7 @@ export function KindredThemeProvider({ children }: { children: React.ReactNode }
   const theme = useSyncExternalStore<KindredTheme>(
     subscribeTheme,
     readStoredTheme,
-    () => 'nocturne',
+    () => 'alabaster',
   );
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function KindredThemeProvider({ children }: { children: React.ReactNode }
 
   const toggleTheme = useCallback(() => {
     const current = readStoredTheme();
-    setTheme(current === 'nocturne' ? 'alabaster' : 'nocturne');
+    setTheme(current === 'alabaster' ? 'nocturne' : 'alabaster');
   }, [setTheme]);
 
   return (

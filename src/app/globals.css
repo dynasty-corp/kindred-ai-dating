@@ -1,62 +1,62 @@
 @import "tailwindcss";
 
 :root,
+[data-theme="alabaster"] {
+  color-scheme: light;
+  --surface-canvas: #fffdf9;
+  --surface-elevated: #ffffff;
+  --surface-subtle: #f7f2ea;
+  --surface-glass: rgba(255, 255, 255, 0.86);
+  --surface-glass-strong: rgba(255, 253, 249, 0.92);
+  --surface-input: #ffffff;
+
+  --ink-primary: #1d1b24;
+  --ink-secondary: #565263;
+  --ink-muted: #847f92;
+
+  --accent-coral: #e4644b;
+  --accent-coral-deep: #cb4f37;
+  --accent-coral-soft: rgba(228, 100, 75, 0.11);
+  --accent-amber: #c98627;
+  --accent-amber-soft: rgba(235, 169, 66, 0.14);
+  --accent-sage: #2f7d5a;
+  --accent-sage-soft: rgba(47, 125, 90, 0.11);
+  --accent-danger: #c44136;
+  --accent-danger-soft: rgba(196, 65, 54, 0.1);
+
+  --border-hairline: rgba(29, 27, 36, 0.08);
+  --border-strong: rgba(29, 27, 36, 0.15);
+  --spotlight-glow: rgba(228, 100, 75, 0.08);
+  --shadow-bento: 0 14px 40px -22px rgba(29, 27, 36, 0.12), 0 2px 8px -2px rgba(29, 27, 36, 0.04);
+}
+
 [data-theme="nocturne"] {
   color-scheme: dark;
-  --surface-canvas: #0a090e;
-  --surface-elevated: #14121c;
-  --surface-subtle: #1c1927;
-  --surface-glass: rgba(20, 18, 28, 0.74);
-  --surface-glass-strong: rgba(20, 18, 28, 0.88);
-  --surface-input: rgba(12, 10, 17, 0.82);
+  --surface-canvas: #0f0d16;
+  --surface-elevated: #191624;
+  --surface-subtle: #221e30;
+  --surface-glass: rgba(25, 22, 36, 0.8);
+  --surface-glass-strong: rgba(15, 13, 22, 0.9);
+  --surface-input: rgba(15, 13, 22, 0.85);
 
-  --ink-primary: #f7f4ef;
-  --ink-secondary: #b5aebe;
-  --ink-muted: #7c7489;
+  --ink-primary: #f9f6f1;
+  --ink-secondary: #beb7c9;
+  --ink-muted: #877f96;
 
-  --accent-coral: #ff6b5b;
-  --accent-coral-deep: #e25141;
-  --accent-coral-soft: rgba(255, 107, 91, 0.14);
-  --accent-amber: #f5a623;
-  --accent-amber-soft: rgba(245, 166, 35, 0.14);
-  --accent-sage: #34d399;
-  --accent-sage-soft: rgba(52, 211, 153, 0.14);
+  --accent-coral: #ff7563;
+  --accent-coral-deep: #eb5b49;
+  --accent-coral-soft: rgba(255, 117, 99, 0.15);
+  --accent-amber: #f5b142;
+  --accent-amber-soft: rgba(245, 177, 66, 0.15);
+  --accent-sage: #3fd89f;
+  --accent-sage-soft: rgba(63, 216, 159, 0.14);
   --accent-danger: #f87171;
   --accent-danger-soft: rgba(248, 113, 113, 0.14);
 
-  --border-hairline: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --spotlight-glow: rgba(255, 107, 91, 0.12);
-  --shadow-bento: 0 22px 54px -26px rgba(0, 0, 0, 0.85);
-}
-
-[data-theme="alabaster"] {
-  color-scheme: light;
-  --surface-canvas: #faf7f2;
-  --surface-elevated: #ffffff;
-  --surface-subtle: #f2ece3;
-  --surface-glass: rgba(255, 255, 255, 0.78);
-  --surface-glass-strong: rgba(255, 255, 255, 0.92);
-  --surface-input: rgba(255, 255, 255, 0.95);
-
-  --ink-primary: #18161d;
-  --ink-secondary: #54505e;
-  --ink-muted: #7c7788;
-
-  --accent-coral: #d96b4f;
-  --accent-coral-deep: #b85137;
-  --accent-coral-soft: rgba(217, 107, 79, 0.12);
-  --accent-amber: #c89b54;
-  --accent-amber-soft: rgba(200, 155, 84, 0.14);
-  --accent-sage: #4e7a61;
-  --accent-sage-soft: rgba(78, 122, 97, 0.13);
-  --accent-danger: #9b3b2e;
-  --accent-danger-soft: rgba(155, 59, 46, 0.11);
-
-  --border-hairline: rgba(24, 22, 29, 0.09);
-  --border-strong: rgba(24, 22, 29, 0.18);
-  --spotlight-glow: rgba(217, 107, 79, 0.1);
-  --shadow-bento: 0 18px 46px -24px rgba(24, 22, 29, 0.16);
+  --border-hairline: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.17);
+  --spotlight-glow: rgba(255, 117, 99, 0.12);
+  --shadow-bento: 0 22px 54px -26px rgba(0, 0, 0, 0.78);
 }
 
 * {
@@ -71,12 +71,12 @@ body {
   color: var(--ink-primary);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.32s ease, color 0.32s ease;
+  transition: background-color 0.28s ease, color 0.28s ease;
 }
 
 .font-editorial {
   font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
 .font-mono-label {
@@ -86,8 +86,8 @@ body {
 .editorial-card,
 .editorial-bento {
   background: var(--surface-glass);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-hairline);
   box-shadow: var(--shadow-bento);
 }
@@ -110,7 +110,7 @@ body {
   opacity: 0;
   transition: opacity 0.35s ease;
   background: radial-gradient(
-    420px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    380px circle at var(--spot-x, 50%) var(--spot-y, 50%),
     var(--spotlight-glow),
     transparent 65%
   );

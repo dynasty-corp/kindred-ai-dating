@@ -24,9 +24,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'KindredAI — Agent-to-Agent Dating & Shared-Experience Studio',
+  title: 'KindredAI — Thoughtful AI-Guided Dating & Shared Experiences',
   description:
-    'Privacy-preserving Wingman onboarding, autonomous Agent Lounge dossiers, 2-player co-op games, and consent-gated relationship simulations.',
+    'Warm, privacy-first Wingman onboarding, autonomous Agent Lounge introductions, 2-player co-op games, and consent-gated relationship simulations.',
 };
 
 export const viewport: Viewport = {
@@ -42,11 +42,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-theme="nocturne"
+      data-theme="alabaster"
       suppressHydrationWarning
       className={`${instrumentSerif.variable} ${jakarta.variable} ${jetbrains.variable}`}
     >
-      <body className="min-h-screen bg-[var(--surface-canvas)] text-[var(--ink-primary)] selection:bg-[var(--accent-coral)]/25 selection:text-[var(--ink-primary)]">
+      <body className="min-h-screen bg-[var(--surface-canvas)] text-[var(--ink-primary)] selection:bg-[var(--accent-coral)]/20 selection:text-[var(--ink-primary)]">
         <KindredThemeProvider>{children}</KindredThemeProvider>
       </body>
     </html>

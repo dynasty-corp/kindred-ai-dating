@@ -24,7 +24,7 @@ export const Button = React.forwardRef<
     secondary:
       'bg-[var(--ink-primary)] text-[var(--surface-canvas)] hover:opacity-90 shadow-sm disabled:opacity-45 disabled:pointer-events-none',
     sage:
-      'bg-[var(--accent-sage)] text-[#0A090E] font-semibold hover:brightness-95 shadow-[0_8px_24px_-10px_var(--accent-sage)] disabled:opacity-45 disabled:pointer-events-none',
+      'bg-[var(--accent-sage)] text-white font-semibold hover:brightness-95 shadow-[0_8px_22px_-10px_var(--accent-sage)] disabled:opacity-45 disabled:pointer-events-none',
     outline:
       'bg-[var(--surface-glass)] text-[var(--ink-primary)] border border-[var(--border-hairline)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-subtle)] disabled:opacity-45 disabled:pointer-events-none',
     ghost:
